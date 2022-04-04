@@ -19,6 +19,7 @@ import {
     AutocompleteBox,
     IAutocompleteBoxOption,
 } from 'component/common/AutocompleteBox/AutocompleteBox';
+import { SegmentDocsValuesLimit } from 'component/segments/SegmentDocs/SegmentDocs';
 
 interface ISegmentFormPartTwoProps {
     constraints: IConstraint[];
@@ -48,8 +49,11 @@ export const SegmentFormStepTwo: React.FC<ISegmentFormPartTwoProps> = ({
     };
 
     return (
-        <div className={styles.form}>
-            <div className={styles.container}>
+        <>
+            <div className={styles.form}>
+                <div className={styles.docs}>
+                    <SegmentDocsValuesLimit />
+                </div>
                 <div>
                     <p className={styles.inputDescription}>
                         Select the context fields you want to include in the
@@ -88,7 +92,6 @@ export const SegmentFormStepTwo: React.FC<ISegmentFormPartTwoProps> = ({
                         Add context field
                     </PermissionButton>
                 </div>
-
                 <ConditionallyRender
                     condition={constraints.length === 0}
                     show={
@@ -109,7 +112,6 @@ export const SegmentFormStepTwo: React.FC<ISegmentFormPartTwoProps> = ({
                     />
                 </div>
             </div>
-
             <div className={styles.buttonContainer}>
                 <Button
                     type="button"
@@ -129,6 +131,6 @@ export const SegmentFormStepTwo: React.FC<ISegmentFormPartTwoProps> = ({
                     Cancel
                 </Button>
             </div>
-        </div>
+        </>
     );
 };

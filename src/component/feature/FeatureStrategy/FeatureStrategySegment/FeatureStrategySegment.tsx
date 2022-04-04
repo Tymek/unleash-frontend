@@ -7,6 +7,7 @@ import {
 } from 'component/common/AutocompleteBox/AutocompleteBox';
 import { FeatureStrategySegmentList } from 'component/feature/FeatureStrategy/FeatureStrategySegment/FeatureStrategySegmentList';
 import { useStyles } from 'component/feature/FeatureStrategy/FeatureStrategySegment/FeatureStrategySegment.styles';
+import { SegmentDocsValuesLimit } from 'component/segments/SegmentDocs/SegmentDocs';
 
 interface IFeatureStrategySegmentProps {
     segments: ISegment[];
@@ -45,6 +46,7 @@ export const FeatureStrategySegment = ({
     return (
         <>
             <h3 className={styles.title}>Segmentation</h3>
+            {selectedSegments.length > 0 && <SegmentDocsValuesLimit />}
             <p>Add a predefined segment to constrain this feature toggle:</p>
             <AutocompleteBox
                 label="Select segments"

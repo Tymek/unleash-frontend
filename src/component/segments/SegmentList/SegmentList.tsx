@@ -27,6 +27,7 @@ import HeaderTitle from 'component/common/HeaderTitle';
 import PageContent from 'component/common/PageContent';
 import PermissionButton from 'component/common/PermissionButton/PermissionButton';
 import { SegmentDelete } from '../SegmentDelete/SegmentDelete';
+import { SegmentDocsExperimental } from 'component/segments/SegmentDocs/SegmentDocs';
 
 export const SegmentsList = () => {
     const history = useHistory();
@@ -107,6 +108,9 @@ export const SegmentsList = () => {
                 />
             }
         >
+            <div className={styles.docs}>
+                <SegmentDocsExperimental />
+            </div>
             <Table>
                 <TableHead>
                     <TableRow className={styles.tableRow}>

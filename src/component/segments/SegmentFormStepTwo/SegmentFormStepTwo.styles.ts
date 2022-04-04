@@ -1,7 +1,9 @@
 import { makeStyles } from '@material-ui/core/styles';
 
 export const useStyles = makeStyles(theme => ({
-    container: {},
+    docs: {
+        marginBottom: '2rem',
+    },
     form: {
         display: 'flex',
         flexDirection: 'column',

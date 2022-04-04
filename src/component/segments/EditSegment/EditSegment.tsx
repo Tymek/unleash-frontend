@@ -12,11 +12,9 @@ import { useHistory } from 'react-router-dom';
 import { formatUnknownError } from 'utils/formatUnknownError';
 import { useSegmentForm } from '../hooks/useSegmentForm';
 import { SegmentForm } from '../SegmentForm/SegmentForm';
-import {
-    segmentsFormDocsLink,
-    segmentsFormDescription,
-} from 'component/segments/CreateSegment/CreateSegment';
+import { segmentsFormDescription } from 'component/segments/CreateSegment/CreateSegment';
 import { UpdateButton } from 'component/common/UpdateButton/UpdateButton';
+import { segmentsDocsLink } from 'component/segments/SegmentDocs/SegmentDocs';
 
 export const EditSegment = () => {
     const segmentId = useRequiredPathParam('segmentId');
@@ -77,7 +75,7 @@ export const EditSegment = () => {
             loading={loading}
             title="Edit segment"
             description={segmentsFormDescription}
-            documentationLink={segmentsFormDocsLink}
+            documentationLink={segmentsDocsLink}
             documentationLinkLabel="More about segments"
             formatApiCode={formatApiCode}
         >
