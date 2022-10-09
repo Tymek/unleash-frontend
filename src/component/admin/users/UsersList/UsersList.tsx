@@ -1,45 +1,45 @@
-/* eslint-disable no-alert */
-import React, { useContext, useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Table,
+    SortableTableHeader,
     TableBody,
     TableCell,
-    TableHead,
     TableRow,
-} from '@material-ui/core';
+    TablePlaceholder,
+} from 'component/common/Table';
 import ChangePassword from './ChangePassword/ChangePassword';
 import DeleteUser from './DeleteUser/DeleteUser';
-import ConditionallyRender from 'component/common/ConditionallyRender/ConditionallyRender';
-import AccessContext from 'contexts/AccessContext';
-import { ADMIN } from 'component/providers/AccessProvider/permissions';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import ConfirmUserAdded from '../ConfirmUserAdded/ConfirmUserAdded';
-import useUsers from 'hooks/api/getters/useUsers/useUsers';
+import { useUsers } from 'hooks/api/getters/useUsers/useUsers';
 import useAdminUsersApi from 'hooks/api/actions/useAdminUsersApi/useAdminUsersApi';
-import UserListItem from './UserListItem/UserListItem';
-import loadingData from './loadingData';
-import useLoading from 'hooks/useLoading';
-import usePagination from 'hooks/usePagination';
-import PaginateUI from 'component/common/PaginateUI/PaginateUI';
 import { IUser } from 'interfaces/user';
 import IRole from 'interfaces/role';
 import useToast from 'hooks/useToast';
-import { useLocationSettings } from 'hooks/useLocationSettings';
 import { formatUnknownError } from 'utils/formatUnknownError';
-import { useStyles } from './UserListItem/UserListItem.styles';
+import { useUsersPlan } from 'hooks/useUsersPlan';
+import { PageContent } from 'component/common/PageContent/PageContent';
+import { PageHeader } from 'component/common/PageHeader/PageHeader';
+import { Button, useMediaQuery } from '@mui/material';
+import { SearchHighlightProvider } from 'component/common/Table/SearchHighlightContext/SearchHighlightContext';
+import { UserTypeCell } from './UserTypeCell/UserTypeCell';
+import { useGlobalFilter, useSortBy, useTable } from 'react-table';
+import { sortTypes } from 'utils/sortTypes';
+import { HighlightCell } from 'component/common/Table/cells/HighlightCell/HighlightCell';
+import { TextCell } from 'component/common/Table/cells/TextCell/TextCell';
+import { useNavigate } from 'react-router-dom';
+import { DateCell } from 'component/common/Table/cells/DateCell/DateCell';
+import theme from 'themes/theme';
+import { TimeAgoCell } from 'component/common/Table/cells/TimeAgoCell/TimeAgoCell';
+import { UsersActionsCell } from './UsersActionsCell/UsersActionsCell';
+import { Search } from 'component/common/Search/Search';
+import { UserAvatar } from 'component/common/UserAvatar/UserAvatar';
 
 const UsersList = () => {
-    const styles = useStyles();
+    const navigate = useNavigate();
     const { users, roles, refetch, loading } = useUsers();
     const { setToastData, setToastApiError } = useToast();
-    const {
-        removeUser,
-        changePassword,
-        validatePassword,
-        userLoading,
-        userApiErrors,
-    } = useAdminUsersApi();
-    const { hasAccess } = useContext(AccessContext);
-    const { locationSettings } = useLocationSettings();
+    const { removeUser, userLoading, userApiErrors } = useAdminUsersApi();
     const [pwDialog, setPwDialog] = useState<{ open: boolean; user?: IUser }>({
         open: false,
     });
@@ -48,9 +48,10 @@ const UsersList = () => {
     const [emailSent, setEmailSent] = useState(false);
     const [inviteLink, setInviteLink] = useState('');
     const [delUser, setDelUser] = useState<IUser>();
-    const ref = useLoading(loading);
-    const { page, pages, nextPage, prevPage, setPageIndex, pageIndex } =
-        usePagination(users, 50);
+    const { planUsers, isBillingUsers } = useUsersPlan(users);
+
+    const isExtraSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
 
     const closeDelDialog = () => {
         setDelDialog(false);
@@ -73,12 +74,11 @@ const UsersList = () => {
         setPwDialog({ open: false });
     };
 
-    const onDeleteUser = async () => {
+    const onDeleteUser = async (user: IUser) => {
         try {
-            // @ts-expect-error
-            await removeUser(delUser);
+            await removeUser(user.id);
             setToastData({
-                title: `${delUser?.name} has been deleted`,
+                title: `${user.name} has been deleted`,
                 type: 'success',
             });
             refetch();
@@ -94,71 +94,204 @@ const UsersList = () => {
         setInviteLink('');
     };
 
-    const renderRole = (roleId: number) => {
-        const role = roles.find((r: IRole) => r.id === roleId);
-        return role ? role.name : '';
-    };
+    const columns = useMemo(
+        () => [
+            {
+                id: 'type',
+                Header: 'Type',
+                accessor: 'paid',
+                Cell: ({ row: { original: user } }: any) => (
+                    <UserTypeCell value={isBillingUsers && user.paid} />
+                ),
+                disableGlobalFilter: true,
+                sortType: 'boolean',
+            },
+            {
+                Header: 'Created',
+                accessor: 'createdAt',
+                Cell: DateCell,
+                disableGlobalFilter: true,
+                sortType: 'date',
+                minWidth: 120,
+            },
+            {
+                Header: 'Avatar',
+                accessor: 'imageUrl',
+                Cell: ({ row: { original: user } }: any) => (
+                    <TextCell>
+                        <UserAvatar user={user} />
+                    </TextCell>
+                ),
+                disableGlobalFilter: true,
+                disableSortBy: true,
+            },
+            {
+                id: 'name',
+                Header: 'Name',
+                accessor: (row: any) => row.name || '',
+                width: '40%',
+                Cell: HighlightCell,
+            },
+            {
+                id: 'username',
+                Header: 'Username',
+                accessor: (row: any) => row.username || row.email,
+                width: '40%',
+                Cell: HighlightCell,
+            },
+            {
+                id: 'role',
+                Header: 'Role',
+                accessor: (row: any) =>
+                    roles.find((role: IRole) => role.id === row.rootRole)
+                        ?.name || '',
+                disableGlobalFilter: true,
+            },
+            {
+                id: 'last-login',
+                Header: 'Last login',
+                accessor: (row: any) => row.seenAt || '',
+                Cell: ({ row: { original: user } }: any) => (
+                    <TimeAgoCell value={user.seenAt} emptyText="Never logged" />
+                ),
+                disableGlobalFilter: true,
+                sortType: 'date',
+                minWidth: 150,
+            },
+            {
+                Header: 'Actions',
+                id: 'Actions',
+                align: 'center',
+                Cell: ({ row: { original: user } }: any) => (
+                    <UsersActionsCell
+                        onEdit={() => {
+                            navigate(`/admin/users/${user.id}/edit`);
+                        }}
+                        onChangePassword={openPwDialog(user)}
+                        onDelete={openDelDialog(user)}
+                    />
+                ),
+                width: 100,
+                disableGlobalFilter: true,
+                disableSortBy: true,
+            },
+        ],
+        [roles, navigate, isBillingUsers]
+    );
 
-    const renderUsers = () => {
-        if (loading) {
-            return loadingData.map(user => (
-                <UserListItem
-                    key={user.id}
-                    user={user}
-                    openPwDialog={openPwDialog}
-                    openDelDialog={openDelDialog}
-                    locationSettings={locationSettings}
-                    renderRole={renderRole}
-                />
-            ));
+    const initialState = useMemo(() => {
+        return {
+            sortBy: [{ id: 'createdAt' }],
+            hiddenColumns: isBillingUsers ? [] : ['type'],
+        };
+    }, [isBillingUsers]);
+
+    const data = isBillingUsers ? planUsers : users;
+
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        rows,
+        prepareRow,
+        state: { globalFilter },
+        setGlobalFilter,
+        setHiddenColumns,
+    } = useTable(
+        {
+            columns: columns,
+            data,
+            initialState,
+            sortTypes,
+            autoResetGlobalFilter: false,
+            autoResetSortBy: false,
+            disableSortRemove: true,
+            defaultColumn: {
+                Cell: TextCell,
+            },
+        },
+        useGlobalFilter,
+        useSortBy
+    );
+
+    useEffect(() => {
+        const hiddenColumns = [];
+        if (!isBillingUsers || isSmallScreen) {
+            hiddenColumns.push('type');
         }
-
-        return page.map(user => {
-            return (
-                <UserListItem
-                    // @ts-expect-error
-                    key={user.id}
-                    user={user}
-                    openPwDialog={openPwDialog}
-                    openDelDialog={openDelDialog}
-                    locationSettings={locationSettings}
-                    renderRole={renderRole}
-                />
-            );
-        });
-    };
-
-    if (!users) return null;
+        if (isSmallScreen) {
+            hiddenColumns.push('createdAt', 'username');
+        }
+        if (isExtraSmallScreen) {
+            hiddenColumns.push('imageUrl', 'role', 'last-login');
+        }
+        setHiddenColumns(hiddenColumns);
+    }, [setHiddenColumns, isExtraSmallScreen, isSmallScreen, isBillingUsers]);
 
     return (
-        <div ref={ref}>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell className={styles.hideXS}></TableCell>
-                        <TableCell className={styles.hideSM}>Created</TableCell>
-                        <TableCell>Name</TableCell>
-                        <TableCell className={styles.hideSM}>
-                            Username
-                        </TableCell>
-                        <TableCell align="center" className={styles.hideXS}>
-                            Role
-                        </TableCell>
-                        <TableCell align="right">
-                            {hasAccess(ADMIN) ? 'Actions' : ''}
-                        </TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>{renderUsers()}</TableBody>
-                <PaginateUI
-                    pages={pages}
-                    pageIndex={pageIndex}
-                    setPageIndex={setPageIndex}
-                    nextPage={nextPage}
-                    prevPage={prevPage}
+        <PageContent
+            isLoading={loading}
+            header={
+                <PageHeader
+                    title="Users"
+                    actions={
+                        <>
+                            <Search
+                                initialValue={globalFilter}
+                                onChange={setGlobalFilter}
+                            />
+                            <PageHeader.Divider />
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => navigate('/admin/create-user')}
+                            >
+                                New user
+                            </Button>
+                        </>
+                    }
                 />
-            </Table>
-            <br />
+            }
+        >
+            <SearchHighlightProvider value={globalFilter}>
+                <Table {...getTableProps()}>
+                    <SortableTableHeader headerGroups={headerGroups} />
+                    <TableBody {...getTableBodyProps()}>
+                        {rows.map(row => {
+                            prepareRow(row);
+                            return (
+                                <TableRow hover {...row.getRowProps()}>
+                                    {row.cells.map(cell => (
+                                        <TableCell {...cell.getCellProps()}>
+                                            {cell.render('Cell')}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </SearchHighlightProvider>
+            <ConditionallyRender
+                condition={rows.length === 0}
+                show={
+                    <ConditionallyRender
+                        condition={globalFilter?.length > 0}
+                        show={
+                            <TablePlaceholder>
+                                No users found matching &ldquo;
+                                {globalFilter}
+                                &rdquo;
+                            </TablePlaceholder>
+                        }
+                        elseShow={
+                            <TablePlaceholder>
+                                No users available. Get started by adding one.
+                            </TablePlaceholder>
+                        }
+                    />
+                }
+            />
 
             <ConfirmUserAdded
                 open={showConfirm}
@@ -167,16 +300,16 @@ const UsersList = () => {
                 inviteLink={inviteLink}
             />
 
-            <ChangePassword
-                showDialog={pwDialog.open}
-                closeDialog={closePwDialog}
-                // @ts-expect-error
-                changePassword={changePassword}
-                validatePassword={validatePassword}
-                // @ts-expect-error
-                user={pwDialog.user}
+            <ConditionallyRender
+                condition={Boolean(pwDialog.user)}
+                show={() => (
+                    <ChangePassword
+                        showDialog={pwDialog.open}
+                        closeDialog={closePwDialog}
+                        user={pwDialog.user!}
+                    />
+                )}
             />
-
             <ConditionallyRender
                 condition={Boolean(delUser)}
                 show={
@@ -184,13 +317,13 @@ const UsersList = () => {
                         showDialog={delDialog}
                         closeDialog={closeDelDialog}
                         user={delUser!}
-                        removeUser={onDeleteUser}
+                        removeUser={() => onDeleteUser(delUser!)}
                         userLoading={userLoading}
                         userApiErrors={userApiErrors}
                     />
                 }
             />
-        </div>
+        </PageContent>
     );
 };
 

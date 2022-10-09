@@ -1,4 +1,4 @@
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useTagTypeForm from '../TagTypeForm/useTagTypeForm';
 import TagTypeForm from '../TagTypeForm/TagTypeForm';
 import { CreateButton } from 'component/common/CreateButton/CreateButton';
@@ -8,11 +8,12 @@ import useTagTypesApi from 'hooks/api/actions/useTagTypesApi/useTagTypesApi';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import useToast from 'hooks/useToast';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { GO_BACK } from 'constants/navigate';
 
 const CreateTagType = () => {
     const { setToastData, setToastApiError } = useToast();
     const { uiConfig } = useUiConfig();
-    const history = useHistory();
+    const navigate = useNavigate();
     const {
         tagName,
         tagDesc,
@@ -33,7 +34,7 @@ const CreateTagType = () => {
             const payload = getTagPayload();
             try {
                 await createTag(payload);
-                history.push('/tag-types');
+                navigate('/tag-types');
                 setToastData({
                     title: 'Tag type created',
                     confetti: true,
@@ -55,7 +56,7 @@ const CreateTagType = () => {
     };
 
     const handleCancel = () => {
-        history.goBack();
+        navigate(GO_BACK);
     };
 
     return (
@@ -64,6 +65,7 @@ const CreateTagType = () => {
             title="Create tag type"
             description="Tag types allow you to group tags together in the management UI"
             documentationLink="https://docs.getunleash.io/advanced/tags"
+            documentationLinkLabel="Tags documentation"
             formatApiCode={formatApiCode}
         >
             <TagTypeForm

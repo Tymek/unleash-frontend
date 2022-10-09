@@ -1,14 +1,23 @@
-import React from 'react';
+import { VoidFunctionComponent } from 'react';
+import { IUiConfig } from 'interfaces/uiConfig';
 
-interface IRoute {
+export interface IRoute {
     path: string;
-    icon?: string;
-    title?: string;
-    component: React.ComponentType;
-    type: string;
-    hidden?: boolean;
-    flag?: string;
+    title: string;
+    type: 'protected' | 'unprotected';
+    layout?: string;
     parent?: string;
+    flag?: string;
+    configFlag?: keyof IUiConfig;
+    hidden?: boolean;
+    enterprise?: boolean;
+    component: VoidFunctionComponent;
+    menu: IRouteMenu;
 }
 
-export default IRoute;
+interface IRouteMenu {
+    mobile?: boolean;
+    advanced?: boolean;
+    adminSettings?: boolean;
+    isEnterprise?: boolean;
+}

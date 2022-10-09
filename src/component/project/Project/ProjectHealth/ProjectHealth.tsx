@@ -1,16 +1,21 @@
 import { useHealthReport } from 'hooks/api/getters/useHealthReport/useHealthReport';
 import ApiError from 'component/common/ApiError/ApiError';
-import ConditionallyRender from 'component/common/ConditionallyRender';
-import ReportToggleList from 'component/Reporting/ReportToggleList/ReportToggleList';
-import { ReportCard } from 'component/Reporting/ReportCard/ReportCard';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
+import { usePageTitle } from 'hooks/usePageTitle';
+import { ReportCard } from './ReportTable/ReportCard/ReportCard';
+import { ReportTable } from './ReportTable/ReportTable';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
+import { useProjectNameOrId } from 'hooks/api/getters/useProject/useProject';
 
-interface ProjectHealthProps {
-    projectId: string;
-}
+const ProjectHealth = () => {
+    const projectId = useRequiredPathParam('projectId');
+    const projectName = useProjectNameOrId(projectId);
+    usePageTitle(`Project health – ${projectName}`);
 
-const ProjectHealth = ({ projectId }: ProjectHealthProps) => {
-    const { healthReport, refetchHealthReport, error } =
-        useHealthReport(projectId);
+    const { healthReport, refetchHealthReport, error } = useHealthReport(
+        projectId,
+        { refreshInterval: 15 * 1000 }
+    );
 
     if (!healthReport) {
         return null;
@@ -30,8 +35,8 @@ const ProjectHealth = ({ projectId }: ProjectHealthProps) => {
                 }
             />
             <ReportCard healthReport={healthReport} />
-            <ReportToggleList
-                selectedProject={projectId}
+            <ReportTable
+                projectId={projectId}
                 features={healthReport.features}
             />
         </div>

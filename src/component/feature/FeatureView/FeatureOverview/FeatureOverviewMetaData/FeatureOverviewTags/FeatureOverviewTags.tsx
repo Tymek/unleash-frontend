@@ -1,9 +1,7 @@
 import React, { useContext, useState } from 'react';
-import { Chip } from '@material-ui/core';
-import { Close, Label } from '@material-ui/icons';
-import { useParams } from 'react-router-dom';
+import { Chip } from '@mui/material';
+import { Close, Label } from '@mui/icons-material';
 import useTags from 'hooks/api/getters/useTags/useTags';
-import { IFeatureViewParams } from 'interfaces/params';
 import { useStyles } from './FeatureOverviewTags.styles';
 import slackIcon from 'assets/icons/slack.svg';
 import jiraIcon from 'assets/icons/jira.svg';
@@ -11,15 +9,16 @@ import webhookIcon from 'assets/icons/webhooks.svg';
 import { formatAssetPath } from 'utils/formatPath';
 import useTagTypes from 'hooks/api/getters/useTagTypes/useTagTypes';
 import useFeatureApi from 'hooks/api/actions/useFeatureApi/useFeatureApi';
-import Dialogue from 'component/common/Dialogue';
+import { Dialogue } from 'component/common/Dialogue/Dialogue';
 import { ITag } from 'interfaces/tags';
 import useToast from 'hooks/useToast';
 import { UPDATE_FEATURE } from 'component/providers/AccessProvider/permissions';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import AccessContext from 'contexts/AccessContext';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
 
-interface IFeatureOverviewTagsProps extends React.HTMLProps<HTMLButtonElement> {
+interface IFeatureOverviewTagsProps extends React.HTMLProps<HTMLDivElement> {
     projectId: string;
 }
 
@@ -32,8 +31,8 @@ const FeatureOverviewTags: React.FC<IFeatureOverviewTagsProps> = ({
         value: '',
         type: '',
     });
-    const styles = useStyles();
-    const { featureId } = useParams<IFeatureViewParams>();
+    const { classes: styles } = useStyles();
+    const featureId = useRequiredPathParam('featureId');
     const { tags, refetch } = useTags(featureId);
     const { tagTypes } = useTagTypes();
     const { deleteTagFromFeature } = useFeatureApi();
@@ -70,7 +69,7 @@ const FeatureOverviewTags: React.FC<IFeatureOverviewTagsProps> = ({
                     return (
                         <img
                             style={style}
-                            alt="slack"
+                            alt="Slack"
                             src={formatAssetPath(slackIcon)}
                         />
                     );
@@ -78,7 +77,7 @@ const FeatureOverviewTags: React.FC<IFeatureOverviewTagsProps> = ({
                     return (
                         <img
                             style={style}
-                            alt="jira"
+                            alt="JIRA"
                             src={formatAssetPath(jiraIcon)}
                         />
                     );
@@ -86,7 +85,7 @@ const FeatureOverviewTags: React.FC<IFeatureOverviewTagsProps> = ({
                     return (
                         <img
                             style={style}
-                            alt="webhook"
+                            alt="Webhook"
                             src={formatAssetPath(webhookIcon)}
                         />
                     );
@@ -98,15 +97,16 @@ const FeatureOverviewTags: React.FC<IFeatureOverviewTagsProps> = ({
         }
     };
 
-    // @ts-expect-error
-    const renderTag = t => (
+    const renderTag = (t: ITag) => (
         <Chip
             icon={tagIcon(t.type)}
             className={styles.tagChip}
             data-loading
             label={t.value}
             key={`${t.type}:${t.value}`}
-            deleteIcon={<Close className={styles.closeIcon} />}
+            deleteIcon={
+                <Close className={styles.closeIcon} titleAccess="Remove" />
+            }
             onDelete={
                 canDeleteTag
                     ? () => {
@@ -119,32 +119,29 @@ const FeatureOverviewTags: React.FC<IFeatureOverviewTagsProps> = ({
     );
 
     return (
-        <>
-            {/* @ts-expect-error */}
-            <div className={styles.container} {...rest}>
-                <Dialogue
-                    open={showDelDialog}
-                    onClose={() => {
-                        setShowDelDialog(false);
-                        setSelectedTag({ type: '', value: '' });
-                    }}
-                    onClick={() => {
-                        setShowDelDialog(false);
-                        handleDelete();
-                        setSelectedTag({ type: '', value: '' });
-                    }}
-                    title="Are you sure you want to delete this tag?"
-                />
+        <div className={styles.container} {...rest}>
+            <Dialogue
+                open={showDelDialog}
+                onClose={() => {
+                    setShowDelDialog(false);
+                    setSelectedTag({ type: '', value: '' });
+                }}
+                onClick={() => {
+                    setShowDelDialog(false);
+                    handleDelete();
+                    setSelectedTag({ type: '', value: '' });
+                }}
+                title="Are you sure you want to delete this tag?"
+            />
 
-                <div className={styles.tagContent}>
-                    <ConditionallyRender
-                        condition={tags.length > 0}
-                        show={tags.map(renderTag)}
-                        elseShow={<p data-loading>No tags to display</p>}
-                    />
-                </div>
+            <div>
+                <ConditionallyRender
+                    condition={tags.length > 0}
+                    show={tags.map(renderTag)}
+                    elseShow={<p data-loading>No tags to display</p>}
+                />
             </div>
-        </>
+        </div>
     );
 };
 

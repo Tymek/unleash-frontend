@@ -2,7 +2,7 @@ import { ILocationSettings } from 'hooks/useLocationSettings';
 import 'chartjs-adapter-date-fns';
 import { ChartOptions, defaults } from 'chart.js';
 import { IFeatureMetricsRaw } from 'interfaces/featureToggle';
-import theme from 'themes/mainTheme';
+import theme from 'themes/theme';
 import { formatDateHM } from 'utils/formatDate';
 
 export const createChartOptions = (
@@ -75,14 +75,6 @@ export const createChartOptions = (
                     callback: (_, i, data) =>
                         formatDateHM(data[i].value, locationSettings.locale),
                 },
-            },
-        },
-        elements: {
-            point: {
-                // If we only have one point, always show a dot (since there's no line).
-                // If we have multiple points, only show dots on hover (looks better).
-                radius: metrics.length === 1 ? 6 : 0,
-                hoverRadius: 6,
             },
         },
     };

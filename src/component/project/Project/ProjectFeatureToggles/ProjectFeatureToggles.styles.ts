@@ -1,31 +1,33 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
         boxShadow: 'none',
         marginLeft: '1rem',
         minHeight: '100%',
         width: 'calc(100% - 1rem)',
         position: 'relative',
-        paddingBottom: '4rem',
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
             marginLeft: '0',
             paddingBottom: '4rem',
             width: 'inherit',
         },
     },
-
-    bodyClass: { padding: '0.5rem 1rem' },
+    headerClass: {
+        '& th': {
+            fontSize: theme.fontSizes.smallerBody,
+            lineHeight: '1rem',
+        },
+    },
+    bodyClass: {
+        overflowX: 'auto',
+        padding: theme.spacing(4),
+    },
     header: {
         padding: '1rem',
     },
     title: {
-        fontSize: '1rem',
-        fontWeight: 'normal',
         display: 'unset',
-        [theme.breakpoints.down(600)]: {
-            display: 'none',
-        },
     },
     iconButton: {
         marginRight: '1rem',
@@ -54,5 +56,17 @@ export const useStyles = makeStyles(theme => ({
     },
     button: {
         whiteSpace: 'nowrap',
+    },
+    row: {
+        position: 'absolute',
+        width: '100%',
+    },
+    cell: {
+        alignItems: 'center',
+        display: 'flex',
+        flexShrink: 0,
+        '& > *': {
+            flexGrow: 1,
+        },
     },
 }));

@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
         maxWidth: '400px',
     },
@@ -16,6 +16,15 @@ export const useStyles = makeStyles(theme => ({
         [theme.breakpoints.down(600)]: {
             minWidth: '379px',
         },
+    },
+    radioGroup: {
+        marginBottom: theme.spacing(2),
+    },
+    radioItem: {
+        marginBottom: theme.spacing(1),
+    },
+    radio: {
+        marginLeft: theme.spacing(1.5),
     },
     label: {
         minWidth: '300px',
@@ -42,5 +51,11 @@ export const useStyles = makeStyles(theme => ({
         color: theme.palette.error.main,
         position: 'absolute',
         top: '-8px',
+    },
+    selectOptionsLink: {
+        cursor: 'pointer',
+    },
+    selectOptionCheckbox: {
+        marginRight: '0.2rem',
     },
 }));

@@ -1,9 +1,8 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     header: {
-        backgroundColor: '#fff',
-        color: '#000',
+        backgroundColor: theme.palette.headerBackground,
         padding: '0.5rem',
         boxShadow: 'none',
         position: 'relative',
@@ -13,7 +12,7 @@ export const useStyles = makeStyles(theme => ({
         display: 'flex',
         justifyContent: 'center',
         marginLeft: '1.5rem',
-        ['& a']: {
+        '& a': {
             textDecoration: 'none',
             color: 'inherit',
             marginRight: '1.5rem',
@@ -24,9 +23,15 @@ export const useStyles = makeStyles(theme => ({
     container: {
         display: 'flex',
         alignItems: 'center',
-        [theme.breakpoints.down('sm')]: {
+        maxWidth: 1280,
+        [theme.breakpoints.down('md')]: {
             padding: '0',
         },
+    },
+    nav: {
+        display: 'flex',
+        alignItems: 'center',
+        flexGrow: 1,
     },
     drawerButton: {
         color: '#000',
@@ -74,18 +79,11 @@ export const useStyles = makeStyles(theme => ({
         textDecoration: 'none',
         alignItems: 'center',
         display: 'flex',
-        color: '#000',
     },
-    docsLink: {
-        color: '#000',
-        textDecoration: 'none',
-        padding: '0.25rem 0.8rem',
-        display: 'flex',
-        alignItems: 'center',
+    icon: {
+        color: theme.palette.grey[700],
     },
-    docsIcon: {
-        color: '#6C6C6C',
-        height: '25px',
-        width: '25px',
+    wideButton: {
+        borderRadius: 100,
     },
 }));

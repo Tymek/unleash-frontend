@@ -1,4 +1,4 @@
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ProjectForm from '../ProjectForm/ProjectForm';
 import useProjectForm from '../hooks/useProjectForm';
 import { CreateButton } from 'component/common/CreateButton/CreateButton';
@@ -9,12 +9,13 @@ import { useAuthUser } from 'hooks/api/getters/useAuth/useAuthUser';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import useToast from 'hooks/useToast';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { GO_BACK } from 'constants/navigate';
 
 const CreateProject = () => {
     const { setToastData, setToastApiError } = useToast();
     const { refetchUser } = useAuthUser();
     const { uiConfig } = useUiConfig();
-    const history = useHistory();
+    const navigate = useNavigate();
     const {
         projectId,
         projectName,
@@ -42,7 +43,7 @@ const CreateProject = () => {
             try {
                 await createProject(payload);
                 refetchUser();
-                history.push(`/projects/${projectId}`);
+                navigate(`/projects/${projectId}`);
                 setToastData({
                     title: 'Project created',
                     text: 'Now you can add toggles to this project',
@@ -65,7 +66,7 @@ const CreateProject = () => {
     };
 
     const handleCancel = () => {
-        history.goBack();
+        navigate(GO_BACK);
     };
 
     return (
@@ -74,6 +75,7 @@ const CreateProject = () => {
             title="Create project"
             description="Projects allows you to group feature toggles together in the management UI."
             documentationLink="https://docs.getunleash.io/user_guide/projects"
+            documentationLinkLabel="Projects documentation"
             formatApiCode={formatApiCode}
         >
             <ProjectForm

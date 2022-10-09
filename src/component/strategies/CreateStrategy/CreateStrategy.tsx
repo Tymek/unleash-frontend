@@ -1,4 +1,4 @@
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import useToast from 'hooks/useToast';
 import FormTemplate from 'component/common/FormTemplate/FormTemplate';
@@ -9,11 +9,12 @@ import useStrategiesApi from 'hooks/api/actions/useStrategiesApi/useStrategiesAp
 import { useStrategies } from 'hooks/api/getters/useStrategies/useStrategies';
 import { formatUnknownError } from 'utils/formatUnknownError';
 import { CreateButton } from 'component/common/CreateButton/CreateButton';
+import { GO_BACK } from 'constants/navigate';
 
 export const CreateStrategy = () => {
     const { setToastData, setToastApiError } = useToast();
     const { uiConfig } = useUiConfig();
-    const history = useHistory();
+    const navigate = useNavigate();
     const {
         strategyName,
         strategyDesc,
@@ -41,7 +42,7 @@ export const CreateStrategy = () => {
             try {
                 await createStrategy(payload);
                 refetchStrategies();
-                history.push(`/strategies/${strategyName}`);
+                navigate(`/strategies/${strategyName}`);
                 setToastData({
                     title: 'Strategy created',
                     text: 'Successfully created strategy',
@@ -64,7 +65,7 @@ export const CreateStrategy = () => {
     };
 
     const handleCancel = () => {
-        history.goBack();
+        navigate(GO_BACK);
     };
 
     return (
@@ -74,6 +75,7 @@ export const CreateStrategy = () => {
             description="The strategy type and the parameters will be selectable when adding an activation strategy to a toggle in the environments.
             The parameter defines the type of activation strategy. E.g. you can create a type 'Teams' and add a parameter 'List'. Then it's easy to add team names to the activation strategy"
             documentationLink="https://docs.getunleash.io/advanced/custom_activation_strategy"
+            documentationLinkLabel="Custom strategies documentation"
             formatApiCode={formatApiCode}
         >
             <StrategyForm
@@ -82,6 +84,7 @@ export const CreateStrategy = () => {
                 handleCancel={handleCancel}
                 strategyName={strategyName}
                 setStrategyName={setStrategyName}
+                validateStrategyName={validateStrategyName}
                 strategyDesc={strategyDesc}
                 setStrategyDesc={setStrategyDesc}
                 params={params}

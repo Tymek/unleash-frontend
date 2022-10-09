@@ -7,6 +7,9 @@ import {
 } from 'component/common/AutocompleteBox/AutocompleteBox';
 import { FeatureStrategySegmentList } from 'component/feature/FeatureStrategy/FeatureStrategySegment/FeatureStrategySegmentList';
 import { useStyles } from 'component/feature/FeatureStrategy/FeatureStrategySegment/FeatureStrategySegment.styles';
+import { SegmentDocsStrategyWarning } from 'component/segments/SegmentDocs/SegmentDocs';
+import { useSegmentLimits } from 'hooks/api/getters/useSegmentLimits/useSegmentLimits';
+import { Divider, Typography } from '@mui/material';
 
 interface IFeatureStrategySegmentProps {
     segments: ISegment[];
@@ -18,7 +21,13 @@ export const FeatureStrategySegment = ({
     setSegments: setSelectedSegments,
 }: IFeatureStrategySegmentProps) => {
     const { segments: allSegments } = useSegments();
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
+    const { strategySegmentsLimit } = useSegmentLimits();
+
+    const atStrategySegmentsLimit: boolean = Boolean(
+        strategySegmentsLimit &&
+            selectedSegments.length >= strategySegmentsLimit
+    );
 
     if (!allSegments || allSegments.length === 0) {
         return null;
@@ -44,17 +53,22 @@ export const FeatureStrategySegment = ({
 
     return (
         <>
-            <h3 className={styles.title}>Segmentation</h3>
+            <Typography component="h3" sx={{ m: 0 }} variant="h3">
+                Segmentation
+            </Typography>
+            {atStrategySegmentsLimit && <SegmentDocsStrategyWarning />}
             <p>Add a predefined segment to constrain this feature toggle:</p>
             <AutocompleteBox
                 label="Select segments"
                 options={autocompleteOptions}
                 onChange={onChange}
+                disabled={atStrategySegmentsLimit}
             />
             <FeatureStrategySegmentList
                 segments={selectedSegments}
                 setSegments={setSelectedSegments}
             />
+            <Divider className={styles.divider} />
         </>
     );
 };

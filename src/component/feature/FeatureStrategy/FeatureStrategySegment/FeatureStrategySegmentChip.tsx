@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ISegment } from 'interfaces/segment';
-import { Clear, VisibilityOff, Visibility } from '@material-ui/icons';
+import { Clear, VisibilityOff, Visibility } from '@mui/icons-material';
 import { useStyles } from './FeatureStrategySegmentChip.styles';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { constraintAccordionListId } from 'component/common/ConstraintAccordion/ConstraintAccordionList/ConstraintAccordionList';
+import { Tooltip } from '@mui/material';
 
 interface IFeatureStrategySegmentListProps {
     segment: ISegment;
@@ -19,7 +20,7 @@ export const FeatureStrategySegmentChip = ({
     preview,
     setPreview,
 }: IFeatureStrategySegmentListProps) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
 
     const onRemove = () => {
         setSegments(prev => {
@@ -39,20 +40,15 @@ export const FeatureStrategySegmentChip = ({
     const togglePreviewIcon = (
         <ConditionallyRender
             condition={segment === preview}
-            show={
-                <VisibilityOff
-                    titleAccess="Hide preview"
-                    className={styles.icon}
-                />
-            }
-            elseShow={
-                <Visibility
-                    titleAccess="Show preview"
-                    className={styles.icon}
-                />
-            }
+            show={<VisibilityOff titleAccess="Hide" className={styles.icon} />}
+            elseShow={<Visibility titleAccess="Show" className={styles.icon} />}
         />
     );
+
+    const previewIconTooltip =
+        segment === preview
+            ? 'Hide segment constraints'
+            : 'Preview segment constraints';
 
     return (
         <span className={styles.chip}>
@@ -63,18 +59,26 @@ export const FeatureStrategySegmentChip = ({
             >
                 {segment.name}
             </Link>
-            <button
-                type="button"
-                onClick={onTogglePreview}
-                className={styles.button}
-                aria-expanded={segment === preview}
-                aria-controls={constraintAccordionListId}
-            >
-                {togglePreviewIcon}
-            </button>
-            <button type="button" onClick={onRemove} className={styles.button}>
-                <Clear titleAccess="Remove" className={styles.icon} />
-            </button>
+            <Tooltip title={previewIconTooltip} arrow>
+                <button
+                    type="button"
+                    onClick={onTogglePreview}
+                    className={styles.button}
+                    aria-expanded={segment === preview}
+                    aria-controls={constraintAccordionListId}
+                >
+                    {togglePreviewIcon}
+                </button>
+            </Tooltip>
+            <Tooltip title="Remove segment" arrow>
+                <button
+                    type="button"
+                    onClick={onRemove}
+                    className={styles.button}
+                >
+                    <Clear titleAccess="Remove" className={styles.icon} />
+                </button>
+            </Tooltip>
         </span>
     );
 };

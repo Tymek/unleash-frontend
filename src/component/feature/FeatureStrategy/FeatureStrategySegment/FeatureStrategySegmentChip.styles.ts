@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     chip: {
         display: 'flex',
         alignItems: 'center',
@@ -10,7 +10,7 @@ export const useStyles = makeStyles(theme => ({
         paddingBlockStart: 4,
         paddingBlockEnd: 4,
         borderRadius: '100rem',
-        background: theme.palette.primary.main,
+        background: theme.palette.featureStrategySegmentChipBackground,
         color: 'white',
     },
     link: {

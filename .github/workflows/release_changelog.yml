@@ -1,4 +1,4 @@
-name: 'Releases'
+name: 'Release changelog'
 on:
   push:
     tags:
@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Build changelog
         id: github_release
-        uses: metcalfc/changelog-generator@v2.0.0
+        uses: metcalfc/changelog-generator@v3.0.0
         with:
           myToken: ${{ secrets.GITHUB_TOKEN }}
       - name: Create release
@@ -22,5 +22,6 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
           body: ${{ steps.github_release.outputs.changelog }}
+          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}

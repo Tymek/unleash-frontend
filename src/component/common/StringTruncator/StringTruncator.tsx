@@ -1,5 +1,5 @@
-import { Tooltip } from '@material-ui/core';
-import ConditionallyRender from '../ConditionallyRender';
+import { Tooltip } from '@mui/material';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 
 interface IStringTruncatorProps {
     text: string;
@@ -17,7 +17,7 @@ const StringTruncator = ({
 }: IStringTruncatorProps) => {
     return (
         <ConditionallyRender
-            condition={text.length > maxLength}
+            condition={(text?.length ?? 0) > maxLength}
             show={
                 <Tooltip title={text} arrow>
                     <span

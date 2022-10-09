@@ -6,20 +6,21 @@ import useProjectRolesApi from 'hooks/api/actions/useProjectRolesApi/useProjectR
 import useProjectRole from 'hooks/api/getters/useProjectRole/useProjectRole';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import useToast from 'hooks/useToast';
-import { IPermission } from 'interfaces/user';
-import { useParams, useHistory } from 'react-router-dom';
+import { IPermission } from 'interfaces/project';
+import { useNavigate } from 'react-router-dom';
 import useProjectRoleForm from '../hooks/useProjectRoleForm';
 import ProjectRoleForm from '../ProjectRoleForm/ProjectRoleForm';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
+import { GO_BACK } from 'constants/navigate';
 
 const EditProjectRole = () => {
     const { uiConfig } = useUiConfig();
     const { setToastData, setToastApiError } = useToast();
+    const projectId = useRequiredPathParam('id');
+    const { role } = useProjectRole(projectId);
 
-    const { id } = useParams<{ id: string }>();
-    const { role } = useProjectRole(id);
-
-    const history = useHistory();
+    const navigate = useNavigate();
     const {
         roleName,
         roleDesc,
@@ -42,7 +43,6 @@ const EditProjectRole = () => {
     useEffect(() => {
         const initialCheckedPermissions = role?.permissions?.reduce(
             (acc: { [key: string]: IPermission }, curr: IPermission) => {
-                // @ts-expect-error
                 acc[getRoleKey(curr)] = curr;
                 return acc;
             },
@@ -66,7 +66,7 @@ const EditProjectRole = () => {
 --data-raw '${JSON.stringify(getProjectRolePayload(), undefined, 2)}'`;
     };
 
-    const { refetch } = useProjectRole(id);
+    const { refetch } = useProjectRole(projectId);
     const { editRole, loading } = useProjectRolesApi();
 
     const handleSubmit = async (e: Event) => {
@@ -78,9 +78,9 @@ const EditProjectRole = () => {
 
         if (validName && validPermissions) {
             try {
-                await editRole(id, payload);
+                await editRole(projectId, payload);
                 refetch();
-                history.push('/admin/roles');
+                navigate('/admin/roles');
                 setToastData({
                     type: 'success',
                     title: 'Project role updated',
@@ -94,7 +94,7 @@ const EditProjectRole = () => {
     };
 
     const handleCancel = () => {
-        history.goBack();
+        navigate(GO_BACK);
     };
 
     return (
@@ -104,7 +104,8 @@ const EditProjectRole = () => {
             description="A project role can be
 customised to limit access
 to resources within a project"
-            documentationLink="https://docs.getunleash.io/how-to/how-to-create-and-assign-custom-project-roles"
+            documentationLink="https://docs.getunleash.io/user_guide/rbac#custom-project-roles"
+            documentationLinkLabel="Project roles documentation"
             formatApiCode={formatApiCode}
         >
             <ProjectRoleForm

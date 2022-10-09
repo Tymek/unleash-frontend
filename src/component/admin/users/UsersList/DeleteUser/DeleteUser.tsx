@@ -1,12 +1,19 @@
 import React from 'react';
-import Dialogue from 'component/common/Dialogue/Dialogue';
-import ConditionallyRender from 'component/common/ConditionallyRender/ConditionallyRender';
+import { Dialogue } from 'component/common/Dialogue/Dialogue';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { REMOVE_USER_ERROR } from 'hooks/api/actions/useAdminUsersApi/useAdminUsersApi';
-import { Alert } from '@material-ui/lab';
+import { Alert, styled } from '@mui/material';
 import useLoading from 'hooks/useLoading';
-import { Avatar, Typography } from '@material-ui/core';
-import { useCommonStyles } from 'themes/commonStyles';
+import { Typography } from '@mui/material';
+import { useThemeStyles } from 'themes/themeStyles';
 import { IUser } from 'interfaces/user';
+import { UserAvatar } from 'component/common/UserAvatar/UserAvatar';
+
+const StyledUserAvatar = styled(UserAvatar)(({ theme }) => ({
+    width: theme.spacing(5),
+    height: theme.spacing(5),
+    margin: 0,
+}));
 
 interface IDeleteUserProps {
     showDialog: boolean;
@@ -26,7 +33,7 @@ const DeleteUser = ({
     userApiErrors,
 }: IDeleteUserProps) => {
     const ref = useLoading(userLoading);
-    const commonStyles = useCommonStyles();
+    const { classes: themeStyles } = useThemeStyles();
 
     return (
         <Dialogue
@@ -50,15 +57,8 @@ const DeleteUser = ({
                         </Alert>
                     }
                 />
-                <div data-loading className={commonStyles.flexRow}>
-                    <Avatar
-                        variant="rounded"
-                        alt={user.name}
-                        src={user.imageUrl}
-                        title={`${
-                            user.name || user.email || user.username
-                        } (id: ${user.id})`}
-                    />
+                <div data-loading className={themeStyles.flexRow}>
+                    <StyledUserAvatar user={user} variant="rounded" />
                     <Typography
                         variant="subtitle1"
                         style={{ marginLeft: '1rem' }}

@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     projectCard: {
         padding: '1rem',
         width: '220px',
@@ -11,8 +11,12 @@ export const useStyles = makeStyles(theme => ({
         margin: '0.5rem',
         boxShadow: 'none',
         border: '1px solid #efefef',
-        [theme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('sm')]: {
             justifyContent: 'center',
+        },
+        '&:hover': {
+            transition: 'background-color 0.2s ease-in-out',
+            backgroundColor: theme.palette.projectCard.hover,
         },
     },
     header: {
@@ -28,6 +32,7 @@ export const useStyles = makeStyles(theme => ({
         boxOrient: 'vertical',
         textOverflow: 'ellipsis',
         overflow: 'hidden',
+        alignItems: 'flex-start',
     },
 
     projectIcon: {
@@ -44,7 +49,7 @@ export const useStyles = makeStyles(theme => ({
         textAlign: 'center',
     },
     infoStats: {
-        color: '#4A4599',
+        color: theme.palette.projectCard.textColor,
         fontWeight: 'bold',
     },
     actionsBtn: {

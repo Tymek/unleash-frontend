@@ -1,9 +1,9 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     item: {
         padding: theme.spacing(2),
-        background: theme.palette.grey[100],
+        background: theme.palette.featureMetricsBackground,
         borderRadius: theme.spacing(2),
         textAlign: 'center',
         [theme.breakpoints.up('md')]: {
@@ -27,6 +27,6 @@ export const useStyles = makeStyles(theme => ({
         borderTopStyle: 'solid',
         borderTopColor: theme.palette.grey[300],
         fontSize: theme.fontSizes.smallerBody,
-        color: theme.palette.grey[700],
+        color: theme.palette.grey[800],
     },
 }));

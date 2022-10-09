@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     menuItem: {
         minWidth: '150px',
         height: '100%',
@@ -20,9 +20,12 @@ export const useStyles = makeStyles(theme => ({
         textDecoration: 'none',
         alignItems: 'center',
         display: 'flex',
-        color: '#000',
+        color: 'inherit',
         height: '100%',
         width: '100%',
-        padding: '0.5rem 1rem',
+        '&&': {
+            // Override MenuItem's built-in padding.
+            padding: '0.5rem 1rem',
+        },
     },
 }));

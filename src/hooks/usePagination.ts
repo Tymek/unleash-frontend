@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
-import { paginate } from '../utils/paginate';
+import { paginate } from 'utils/paginate';
 
-const usePagination = (
-    data: any[],
+/**
+ * @deprecated
+ */
+const usePagination = <T>(
+    data: T[],
     limit: number,
-    filterFunc?: (item: any) => boolean
+    filterFunc?: (item: T) => boolean
 ) => {
-    const [paginatedData, setPaginatedData] = useState([[]]);
+    const [paginatedData, setPaginatedData] = useState<T[][]>([[]]);
     const [pageIndex, setPageIndex] = useState(0);
 
     useEffect(() => {
@@ -17,6 +20,7 @@ const usePagination = (
         }
 
         const result = paginate(dataToPaginate, limit);
+        setPageIndex(0);
         setPaginatedData(result);
         /* eslint-disable-next-line */
     }, [JSON.stringify(data), limit]);

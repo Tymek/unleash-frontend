@@ -1,21 +1,25 @@
 import FormTemplate from 'component/common/FormTemplate/FormTemplate';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ApiTokenForm from '../ApiTokenForm/ApiTokenForm';
 import { CreateButton } from 'component/common/CreateButton/CreateButton';
 import useApiTokensApi from 'hooks/api/actions/useApiTokensApi/useApiTokensApi';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import useToast from 'hooks/useToast';
-import { useApiTokenForm } from '../hooks/useApiTokenForm';
+import { useApiTokenForm } from 'component/admin/apiToken/ApiTokenForm/useApiTokenForm';
 import { ADMIN } from 'component/providers/AccessProvider/permissions';
 import { ConfirmToken } from '../ConfirmToken/ConfirmToken';
 import { useState } from 'react';
 import { scrollToTop } from 'component/common/util';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { usePageTitle } from 'hooks/usePageTitle';
+import { GO_BACK } from 'constants/navigate';
+
+const pageTitle = 'Create API token';
 
 export const CreateApiToken = () => {
     const { setToastApiError } = useToast();
     const { uiConfig } = useUiConfig();
-    const history = useHistory();
+    const navigate = useNavigate();
     const [showConfirm, setShowConfirm] = useState(false);
     const [token, setToken] = useState('');
 
@@ -23,11 +27,11 @@ export const CreateApiToken = () => {
         getApiTokenPayload,
         username,
         type,
-        project,
+        projects,
         environment,
         setUsername,
         setTokenType,
-        setProject,
+        setProjects,
         setEnvironment,
         isValid,
         errors,
@@ -35,6 +39,8 @@ export const CreateApiToken = () => {
     } = useApiTokenForm();
 
     const { createToken, loading } = useApiTokensApi();
+
+    usePageTitle(pageTitle);
 
     const handleSubmit = async (e: Event) => {
         e.preventDefault();
@@ -57,7 +63,7 @@ export const CreateApiToken = () => {
 
     const closeConfirm = () => {
         setShowConfirm(false);
-        history.push('/admin/api');
+        navigate('/admin/api');
     };
 
     const formatApiCode = () => {
@@ -70,26 +76,27 @@ export const CreateApiToken = () => {
     };
 
     const handleCancel = () => {
-        history.goBack();
+        navigate(GO_BACK);
     };
 
     return (
         <FormTemplate
             loading={loading}
-            title="Create Api Token"
+            title={pageTitle}
             description="In order to connect to Unleash clients will need an API token to grant access. A client SDK will need to token with 'client privileges', which allows them to fetch feature toggle configuration and post usage metrics back."
-            documentationLink="https://docs.getunleash.io/user_guide/api-token"
+            documentationLink="https://docs.getunleash.io/reference/api-tokens-and-client-keys"
+            documentationLinkLabel="API tokens documentation"
             formatApiCode={formatApiCode}
         >
             <ApiTokenForm
                 username={username}
                 type={type}
-                project={project}
+                projects={projects}
                 environment={environment}
                 setEnvironment={setEnvironment}
                 setTokenType={setTokenType}
                 setUsername={setUsername}
-                setProject={setProject}
+                setProjects={setProjects}
                 errors={errors}
                 handleSubmit={handleSubmit}
                 handleCancel={handleCancel}

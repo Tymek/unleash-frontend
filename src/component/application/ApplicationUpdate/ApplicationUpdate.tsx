@@ -1,6 +1,6 @@
 import { ChangeEvent, useState } from 'react';
-import { Grid, TextField } from '@material-ui/core';
-import { useCommonStyles } from 'themes/commonStyles';
+import { Grid, TextField } from '@mui/material';
+import { useThemeStyles } from 'themes/themeStyles';
 import icons from 'component/application/iconNames';
 import GeneralSelect from 'component/common/GeneralSelect/GeneralSelect';
 import useApplicationsApi from 'hooks/api/actions/useApplicationsApi/useApplicationsApi';
@@ -20,14 +20,14 @@ export const ApplicationUpdate = ({ application }: IApplicationUpdateProps) => {
     const [localUrl, setLocalUrl] = useState(url || '');
     const [localDescription, setLocalDescription] = useState(description || '');
     const { setToastData, setToastApiError } = useToast();
-    const commonStyles = useCommonStyles();
+    const { classes: themeStyles } = useThemeStyles();
 
-    const handleChange = async (
-        evt: ChangeEvent<{ name?: string | undefined; value: unknown }>,
+    const onChange = async (
         field: string,
-        value: string
+        value: string,
+        event?: ChangeEvent
     ) => {
-        evt.preventDefault();
+        event?.preventDefault();
         try {
             await storeApplicationMetaData(appName, field, value);
             refetchApplication();
@@ -43,7 +43,7 @@ export const ApplicationUpdate = ({ application }: IApplicationUpdateProps) => {
 
     return (
         <Grid container style={{ marginTop: '1rem' }}>
-            <Grid item sm={12} xs={12} className={commonStyles.contentSpacingY}>
+            <Grid item sm={12} xs={12} className={themeStyles.contentSpacingY}>
                 <Grid item>
                     <GeneralSelect
                         name="iconSelect"
@@ -51,9 +51,7 @@ export const ApplicationUpdate = ({ application }: IApplicationUpdateProps) => {
                         label="Icon"
                         options={icons.map(v => ({ key: v, label: v }))}
                         value={icon || 'apps'}
-                        onChange={e =>
-                            handleChange(e, 'icon', e.target.value as string)
-                        }
+                        onChange={key => onChange('icon', key)}
                     />
                 </Grid>
                 <Grid item>
@@ -65,7 +63,7 @@ export const ApplicationUpdate = ({ application }: IApplicationUpdateProps) => {
                         type="url"
                         variant="outlined"
                         size="small"
-                        onBlur={e => handleChange(e, 'url', localUrl)}
+                        onBlur={e => onChange('url', localUrl, e)}
                     />
                 </Grid>
                 <Grid item>
@@ -77,7 +75,7 @@ export const ApplicationUpdate = ({ application }: IApplicationUpdateProps) => {
                         rows={2}
                         onChange={e => setLocalDescription(e.target.value)}
                         onBlur={e =>
-                            handleChange(e, 'description', localDescription)
+                            onChange('description', localDescription, e)
                         }
                     />
                 </Grid>

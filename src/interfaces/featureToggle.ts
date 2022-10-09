@@ -3,6 +3,9 @@ import { IFeatureStrategy } from './strategy';
 export interface IFeatureToggleListItem {
     type: string;
     name: string;
+    stale?: boolean;
+    lastSeenAt?: string;
+    createdAt: string;
     environments: IEnvironments[];
 }
 
@@ -11,21 +14,13 @@ export interface IEnvironments {
     enabled: boolean;
 }
 
-export interface IFeatureTogglePayload {
-    description: string;
-    name: string;
-    projectId: string;
-    type: string;
-    impressionData: boolean;
-}
-
 export interface IFeatureToggle {
     stale: boolean;
     archived: boolean;
     enabled?: boolean;
     createdAt: string;
     lastSeenAt?: string;
-    description: string;
+    description?: string;
     environments: IFeatureEnvironment[];
     name: string;
     project: string;

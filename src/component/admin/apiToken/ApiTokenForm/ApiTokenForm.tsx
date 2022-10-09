@@ -1,62 +1,90 @@
-import { Button } from '@material-ui/core';
-import { KeyboardArrowDownOutlined } from '@material-ui/icons';
+import {
+    Button,
+    FormControl,
+    FormControlLabel,
+    Radio,
+    RadioGroup,
+    Typography,
+    Box,
+} from '@mui/material';
+import { KeyboardArrowDownOutlined } from '@mui/icons-material';
 import React from 'react';
 import { useEnvironments } from 'hooks/api/getters/useEnvironments/useEnvironments';
 import useProjects from 'hooks/api/getters/useProjects/useProjects';
 import GeneralSelect from 'component/common/GeneralSelect/GeneralSelect';
 import Input from 'component/common/Input/Input';
+import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
+import { SelectProjectInput } from './SelectProjectInput/SelectProjectInput';
+import { ApiTokenFormErrorType } from './useApiTokenForm';
 import { useStyles } from './ApiTokenForm.styles';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
+import { TokenType } from 'interfaces/token';
+import { CorsTokenAlert } from 'component/admin/cors/CorsTokenAlert';
+
 interface IApiTokenFormProps {
     username: string;
     type: string;
-    project: string;
+    projects: string[];
     environment?: string;
     setTokenType: (value: string) => void;
     setUsername: React.Dispatch<React.SetStateAction<string>>;
-    setProject: React.Dispatch<React.SetStateAction<string>>;
+    setProjects: React.Dispatch<React.SetStateAction<string[]>>;
     setEnvironment: React.Dispatch<React.SetStateAction<string | undefined>>;
     handleSubmit: (e: any) => void;
     handleCancel: () => void;
     errors: { [key: string]: string };
     mode: 'Create' | 'Edit';
-    clearErrors: () => void;
+    clearErrors: (error?: ApiTokenFormErrorType) => void;
 }
+
 const ApiTokenForm: React.FC<IApiTokenFormProps> = ({
     children,
     username,
     type,
-    project,
+    projects,
     environment,
     setUsername,
     setTokenType,
-    setProject,
+    setProjects,
     setEnvironment,
     handleSubmit,
     handleCancel,
     errors,
     clearErrors,
-    mode,
 }) => {
-    const TYPE_ADMIN = 'ADMIN';
-    const styles = useStyles();
+    const { uiConfig } = useUiConfig();
+    const { classes: styles } = useStyles();
     const { environments } = useEnvironments();
-    const { projects } = useProjects();
+    const { projects: availableProjects } = useProjects();
 
     const selectableTypes = [
-        { key: 'CLIENT', label: 'Client', title: 'Client SDK token' },
-        { key: 'ADMIN', label: 'Admin', title: 'Admin API token' },
+        {
+            key: TokenType.CLIENT,
+            label: `Server-side SDK (${TokenType.CLIENT})`,
+            title: 'Connect server-side SDK or Unleash Proxy',
+        },
+        {
+            key: TokenType.ADMIN,
+            label: TokenType.ADMIN,
+            title: 'Full access for managing Unleash',
+        },
     ];
 
-    const selectableProjects = [{ id: '*', name: 'ALL' }, ...projects].map(
-        i => ({
-            key: i.id,
-            label: i.name,
-            title: i.name,
-        })
-    );
+    if (uiConfig.embedProxy) {
+        selectableTypes.splice(1, 0, {
+            key: TokenType.FRONTEND,
+            label: `Client-side SDK (${TokenType.FRONTEND})`,
+            title: 'Connect web and mobile SDK directly to Unleash',
+        });
+    }
+
+    const selectableProjects = availableProjects.map(project => ({
+        value: project.id,
+        label: project.name,
+    }));
 
     const selectableEnvs =
-        type === TYPE_ADMIN
+        type === TokenType.ADMIN
             ? [{ key: '*', label: 'ALL' }]
             : environments.map(environment => ({
                   key: environment.name,
@@ -79,49 +107,65 @@ const ApiTokenForm: React.FC<IApiTokenFormProps> = ({
                     label="Username"
                     error={errors.username !== undefined}
                     errorText={errors.username}
-                    onFocus={() => clearErrors()}
+                    onFocus={() => clearErrors('username')}
                     autoFocus
                 />
-                <p className={styles.inputDescription}>
-                    What is your token type?
-                </p>
-                <GeneralSelect
-                    options={selectableTypes}
-                    value={type}
-                    onChange={e => setTokenType(e.target.value as string)}
-                    label="Token Type"
-                    id="api_key_type"
-                    name="type"
-                    // @ts-expect-error
-                    IconComponent={KeyboardArrowDownOutlined}
-                    className={styles.selectInput}
-                />
+                <FormControl className={styles.radioGroup}>
+                    <label id="token-type" className={styles.inputDescription}>
+                        What do you want to connect?
+                    </label>
+                    <RadioGroup
+                        aria-labelledby="token-type"
+                        defaultValue="CLIENT"
+                        name="radio-buttons-group"
+                        value={type}
+                        onChange={(event, value) => setTokenType(value)}
+                    >
+                        {selectableTypes.map(({ key, label, title }) => (
+                            <FormControlLabel
+                                key={key}
+                                value={key}
+                                className={styles.radioItem}
+                                control={<Radio className={styles.radio} />}
+                                label={
+                                    <>
+                                        <Typography>{label}</Typography>
+                                        <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                        >
+                                            {title}
+                                        </Typography>
+                                    </>
+                                }
+                            />
+                        ))}
+                    </RadioGroup>
+                </FormControl>
                 <p className={styles.inputDescription}>
                     Which project do you want to give access to?
                 </p>
-                <GeneralSelect
-                    disabled={type === TYPE_ADMIN}
-                    value={project}
+                <SelectProjectInput
+                    disabled={type === TokenType.ADMIN}
                     options={selectableProjects}
-                    onChange={e => setProject(e.target.value as string)}
-                    label="Project"
-                    // @ts-expect-error
-                    IconComponent={KeyboardArrowDownOutlined}
-                    className={styles.selectInput}
+                    defaultValue={projects}
+                    onChange={setProjects}
+                    error={errors?.projects}
+                    onFocus={() => clearErrors('projects')}
                 />
                 <p className={styles.inputDescription}>
                     Which environment should the token have access to?
                 </p>
                 <GeneralSelect
-                    disabled={type === TYPE_ADMIN}
+                    disabled={type === TokenType.ADMIN}
                     options={selectableEnvs}
                     value={environment}
-                    onChange={e => setEnvironment(e.target.value as string)}
+                    onChange={setEnvironment}
                     label="Environment"
                     id="api_key_environment"
                     name="environment"
-                    // @ts-expect-error
                     IconComponent={KeyboardArrowDownOutlined}
+                    fullWidth
                     className={styles.selectInput}
                 />
             </div>
@@ -131,6 +175,14 @@ const ApiTokenForm: React.FC<IApiTokenFormProps> = ({
                     Cancel
                 </Button>
             </div>
+            <ConditionallyRender
+                condition={type === TokenType.FRONTEND}
+                show={
+                    <Box sx={{ mt: 4 }}>
+                        <CorsTokenAlert />
+                    </Box>
+                }
+            />
         </form>
     );
 };

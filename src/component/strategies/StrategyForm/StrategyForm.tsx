@@ -1,19 +1,20 @@
 import Input from 'component/common/Input/Input';
-import { Button } from '@material-ui/core';
+import { Button } from '@mui/material';
 import { useStyles } from './StrategyForm.styles';
-import { Add } from '@material-ui/icons';
+import { Add } from '@mui/icons-material';
 import { trim } from 'component/common/util';
 import { StrategyParameters } from './StrategyParameters/StrategyParameters';
-import { ICustomStrategyParameter } from 'interfaces/strategy';
+import { IStrategyParameter } from 'interfaces/strategy';
 import React from 'react';
 
 interface IStrategyFormProps {
     strategyName: string;
     strategyDesc: string;
-    params: ICustomStrategyParameter[];
+    params: IStrategyParameter[];
     setStrategyName: React.Dispatch<React.SetStateAction<string>>;
+    validateStrategyName?: () => void;
     setStrategyDesc: React.Dispatch<React.SetStateAction<string>>;
-    setParams: React.Dispatch<React.SetStateAction<ICustomStrategyParameter[]>>;
+    setParams: React.Dispatch<React.SetStateAction<IStrategyParameter[]>>;
     handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     handleCancel: () => void;
     errors: { [key: string]: string };
@@ -31,12 +32,13 @@ export const StrategyForm: React.FC<IStrategyFormProps> = ({
     params,
     setParams,
     setStrategyName,
+    validateStrategyName,
     setStrategyDesc,
     errors,
     mode,
     clearErrors,
 }) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const updateParameter = (index: number, updated: object) => {
         let item = { ...params[index] };
         params[index] = Object.assign({}, item, updated);
@@ -65,7 +67,8 @@ export const StrategyForm: React.FC<IStrategyFormProps> = ({
                     onChange={e => setStrategyName(trim(e.target.value))}
                     error={Boolean(errors.name)}
                     errorText={errors.name}
-                    onFocus={() => clearErrors()}
+                    onFocus={clearErrors}
+                    onBlur={validateStrategyName}
                 />
                 <p className={styles.inputDescription}>
                     What is your strategy description?

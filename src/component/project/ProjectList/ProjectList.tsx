@@ -1,24 +1,28 @@
-import { useContext, useMemo, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { mutate } from 'swr';
 import { getProjectFetcher } from 'hooks/api/getters/useProject/getProjectFetcher';
 import useProjects from 'hooks/api/getters/useProjects/useProjects';
-import ConditionallyRender from 'component/common/ConditionallyRender/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { ProjectCard } from '../ProjectCard/ProjectCard';
 import { useStyles } from './ProjectList.styles';
 import { IProjectCard } from 'interfaces/project';
 import loadingData from './loadingData';
 import useLoading from 'hooks/useLoading';
-import PageContent from 'component/common/PageContent';
+import { PageContent } from 'component/common/PageContent/PageContent';
 import AccessContext from 'contexts/AccessContext';
-import HeaderTitle from 'component/common/HeaderTitle';
+import { PageHeader } from 'component/common/PageHeader/PageHeader';
 import ResponsiveButton from 'component/common/ResponsiveButton/ResponsiveButton';
 import { CREATE_PROJECT } from 'component/providers/AccessProvider/permissions';
-import { Add } from '@material-ui/icons';
+import { Add } from '@mui/icons-material';
 import ApiError from 'component/common/ApiError/ApiError';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
-import { SearchField } from 'component/common/SearchField/SearchField';
-import classnames from 'classnames';
+import { TablePlaceholder } from 'component/common/Table';
+import { useMediaQuery } from '@mui/material';
+import theme from 'themes/theme';
+import { Search } from 'component/common/Search/Search';
+
+type PageQueryType = Partial<Record<'search', string>>;
 
 type projectMap = {
     [index: string]: boolean;
@@ -45,20 +49,36 @@ function resolveCreateButtonData(isOss: boolean, hasAccess: boolean) {
 
 export const ProjectListNew = () => {
     const { hasAccess } = useContext(AccessContext);
-    const history = useHistory();
-    const styles = useStyles();
+    const navigate = useNavigate();
+    const { classes: styles } = useStyles();
     const { projects, loading, error, refetch } = useProjects();
     const [fetchedProjects, setFetchedProjects] = useState<projectMap>({});
     const ref = useLoading(loading);
     const { isOss } = useUiConfig();
-    const [filter, setFilter] = useState('');
+
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchValue, setSearchValue] = useState(
+        searchParams.get('search') || ''
+    );
+
+    useEffect(() => {
+        const tableState: PageQueryType = {};
+        if (searchValue) {
+            tableState.search = searchValue;
+        }
+
+        setSearchParams(tableState, {
+            replace: true,
+        });
+    }, [searchValue, setSearchParams]);
 
     const filteredProjects = useMemo(() => {
-        const regExp = new RegExp(filter, 'i');
-        return filter
+        const regExp = new RegExp(searchValue, 'i');
+        return searchValue
             ? projects.filter(project => regExp.test(project.name))
             : projects;
-    }, [projects, filter]);
+    }, [projects, searchValue]);
 
     const handleHover = (projectId: string) => {
         if (fetchedProjects[projectId]) {
@@ -94,21 +114,16 @@ export const ProjectListNew = () => {
             return (
                 <Link
                     key={project.id}
-                    to={{
-                        pathname: `/projects/${project.id}`,
-                        state: {
-                            projectName: project.name,
-                        },
-                    }}
+                    to={`/projects/${project.id}`}
                     className={styles.cardLink}
                 >
                     <ProjectCard
-                        onHover={() => handleHover(project?.id)}
-                        name={project?.name}
-                        memberCount={project?.memberCount}
-                        health={project?.health}
-                        id={project?.id}
-                        featureCount={project?.featureCount}
+                        onHover={() => handleHover(project.id)}
+                        name={project.name}
+                        memberCount={project.memberCount ?? 0}
+                        health={project.health}
+                        id={project.id}
+                        featureCount={project.featureCount}
                     />
                 </Link>
             );
@@ -134,39 +149,69 @@ export const ProjectListNew = () => {
 
     return (
         <div ref={ref}>
-            <div className={styles.searchBarContainer}>
-                <SearchField
-                    initialValue={filter}
-                    updateValue={setFilter}
-                    showValueChip
-                    className={classnames(styles.searchBar, {
-                        skeleton: loading,
-                    })}
-                />
-            </div>
             <PageContent
-                headerContent={
-                    <HeaderTitle
+                header={
+                    <PageHeader
                         title="Projects"
                         actions={
-                            <ResponsiveButton
-                                Icon={Add}
-                                onClick={() => history.push('/projects/create')}
-                                maxWidth="700px"
-                                permission={CREATE_PROJECT}
-                                disabled={createButtonData.disabled}
-                            >
-                                New project
-                            </ResponsiveButton>
+                            <>
+                                <ConditionallyRender
+                                    condition={!isSmallScreen}
+                                    show={
+                                        <>
+                                            <Search
+                                                initialValue={searchValue}
+                                                onChange={setSearchValue}
+                                            />
+                                            <PageHeader.Divider />
+                                        </>
+                                    }
+                                />
+                                <ResponsiveButton
+                                    Icon={Add}
+                                    onClick={() => navigate('/projects/create')}
+                                    maxWidth="700px"
+                                    permission={CREATE_PROJECT}
+                                    disabled={createButtonData.disabled}
+                                >
+                                    New project
+                                </ResponsiveButton>
+                            </>
                         }
-                    />
+                    >
+                        <ConditionallyRender
+                            condition={isSmallScreen}
+                            show={
+                                <Search
+                                    initialValue={searchValue}
+                                    onChange={setSearchValue}
+                                />
+                            }
+                        />
+                    </PageHeader>
                 }
             >
                 <ConditionallyRender condition={error} show={renderError()} />
                 <div className={styles.container}>
                     <ConditionallyRender
                         condition={filteredProjects.length < 1 && !loading}
-                        show={<div>No projects available.</div>}
+                        show={
+                            <ConditionallyRender
+                                condition={searchValue?.length > 0}
+                                show={
+                                    <TablePlaceholder>
+                                        No projects found matching &ldquo;
+                                        {searchValue}
+                                        &rdquo;
+                                    </TablePlaceholder>
+                                }
+                                elseShow={
+                                    <TablePlaceholder>
+                                        No projects available.
+                                    </TablePlaceholder>
+                                }
+                            />
+                        }
                         elseShow={renderProjects()}
                     />
                 </div>

@@ -1,27 +1,29 @@
-import { useParams } from 'react-router';
-import { IFeatureViewParams } from 'interfaces/params';
 import { useFeatureMetricsRaw } from 'hooks/api/getters/useFeatureMetricsRaw/useFeatureMetricsRaw';
-import PageContent from 'component/common/PageContent';
+import { PageContent } from 'component/common/PageContent/PageContent';
 import { useEffect, useMemo, useState } from 'react';
 import {
     FEATURE_METRIC_HOURS_BACK_MAX,
     FeatureMetricsHours,
 } from './FeatureMetricsHours/FeatureMetricsHours';
 import { IFeatureMetricsRaw } from 'interfaces/featureToggle';
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 import { FeatureMetricsContent } from './FeatureMetricsContent/FeatureMetricsContent';
 import { useQueryStringNumberState } from 'hooks/useQueryStringNumberState';
 import { useQueryStringState } from 'hooks/useQueryStringState';
 import { FeatureMetricsChips } from './FeatureMetricsChips/FeatureMetricsChips';
 import { useFeature } from 'hooks/api/getters/useFeature/useFeature';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { useStyles } from './FeatureMetrics.styles';
+import { usePageTitle } from 'hooks/usePageTitle';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
 
 export const FeatureMetrics = () => {
-    const { projectId, featureId } = useParams<IFeatureViewParams>();
+    const projectId = useRequiredPathParam('projectId');
+    const featureId = useRequiredPathParam('featureId');
     const environments = useFeatureMetricsEnvironments(projectId, featureId);
     const applications = useFeatureMetricsApplications(featureId);
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
+    usePageTitle('Metrics');
 
     const [hoursBack = FEATURE_METRIC_HOURS_BACK_MAX, setHoursBack] =
         useQueryStringNumberState('hoursBack');
@@ -55,7 +57,7 @@ export const FeatureMetrics = () => {
     }
 
     return (
-        <PageContent headerContent="">
+        <PageContent>
             <Grid
                 container
                 component="header"
@@ -134,5 +136,3 @@ const useFeatureMetricsApplications = (featureId: string): Set<string> => {
 
     return new Set(applications);
 };
-
-export default FeatureMetrics;

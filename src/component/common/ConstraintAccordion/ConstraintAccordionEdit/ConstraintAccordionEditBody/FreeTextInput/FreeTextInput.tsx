@@ -1,8 +1,10 @@
-import { Button, Chip, makeStyles } from '@material-ui/core';
+import { Button, Chip } from '@mui/material';
+import { makeStyles } from 'tss-react/mui';
 import Input from 'component/common/Input/Input';
 import StringTruncator from 'component/common/StringTruncator/StringTruncator';
 import React, { useState } from 'react';
 import { ConstraintFormHeader } from '../ConstraintFormHeader/ConstraintFormHeader';
+import { parseParameterStrings } from 'utils/parseParameter';
 
 interface IFreeTextInputProps {
     values: string[];
@@ -13,7 +15,7 @@ interface IFreeTextInputProps {
     setError: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
     valueChip: {
         margin: '0 0.5rem 0.5rem 0',
     },
@@ -58,7 +60,7 @@ export const FreeTextInput = ({
     setError,
 }: IFreeTextInputProps) => {
     const [inputValues, setInputValues] = useState('');
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
 
     const onKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === ENTER) {
@@ -68,23 +70,20 @@ export const FreeTextInput = ({
     };
 
     const addValues = () => {
-        if (inputValues.length === 0) {
-            setError('values can not be empty');
-            return;
-        }
-        setError('');
+        const newValues = uniqueValues([
+            ...values,
+            ...parseParameterStrings(inputValues),
+        ]);
 
-        if (inputValues.includes(',')) {
-            const newValues = inputValues
-                .split(',')
-                .filter(values => values)
-                .map(value => value.trim());
-            setValues(uniqueValues([...values, ...newValues]));
+        if (newValues.length === 0) {
+            setError('values cannot be empty');
+        } else if (newValues.some(v => v.length > 100)) {
+            setError('values cannot be longer than 100 characters');
         } else {
-            setValues(uniqueValues([...values, inputValues.trim()]));
+            setError('');
+            setInputValues('');
+            setValues(newValues);
         }
-
-        setInputValues('');
     };
 
     return (
@@ -111,8 +110,8 @@ export const FreeTextInput = ({
                 </div>
                 <Button
                     className={styles.button}
-                    variant="contained"
-                    color="primary"
+                    variant="outlined"
+                    color="secondary"
                     onClick={() => addValues()}
                 >
                     Add values
@@ -137,7 +136,7 @@ const ConstraintValueChips = ({
     values,
     removeValue,
 }: IConstraintValueChipsProps) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     return (
         <>
             {values.map((value, index) => {

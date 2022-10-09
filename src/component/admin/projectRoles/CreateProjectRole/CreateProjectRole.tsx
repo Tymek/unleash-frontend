@@ -1,6 +1,6 @@
 import FormTemplate from 'component/common/FormTemplate/FormTemplate';
 import useProjectRolesApi from 'hooks/api/actions/useProjectRolesApi/useProjectRolesApi';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ProjectRoleForm from '../ProjectRoleForm/ProjectRoleForm';
 import useProjectRoleForm from '../hooks/useProjectRoleForm';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
@@ -8,11 +8,12 @@ import useToast from 'hooks/useToast';
 import { CreateButton } from 'component/common/CreateButton/CreateButton';
 import { ADMIN } from 'component/providers/AccessProvider/permissions';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { GO_BACK } from 'constants/navigate';
 
 const CreateProjectRole = () => {
     const { setToastData, setToastApiError } = useToast();
     const { uiConfig } = useUiConfig();
-    const history = useHistory();
+    const navigate = useNavigate();
     const {
         roleName,
         roleDesc,
@@ -43,7 +44,7 @@ const CreateProjectRole = () => {
             const payload = getProjectRolePayload();
             try {
                 await createRole(payload);
-                history.push('/admin/roles');
+                navigate('/admin/roles');
                 setToastData({
                     title: 'Project role created',
                     text: 'Now you can start assigning your project roles to project members.',
@@ -66,7 +67,7 @@ const CreateProjectRole = () => {
     };
 
     const handleCancel = () => {
-        history.goBack();
+        navigate(GO_BACK);
     };
 
     return (
@@ -76,7 +77,8 @@ const CreateProjectRole = () => {
             description="A project role can be
             customised to limit access
             to resources within a project"
-            documentationLink="https://docs.getunleash.io/how-to/how-to-create-and-assign-custom-project-roles"
+            documentationLink="https://docs.getunleash.io/user_guide/rbac#custom-project-roles"
+            documentationLinkLabel="Project roles documentation"
             formatApiCode={formatApiCode}
         >
             <ProjectRoleForm

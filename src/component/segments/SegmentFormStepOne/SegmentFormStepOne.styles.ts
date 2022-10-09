@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
         maxWidth: '400px',
     },
@@ -23,7 +23,6 @@ export const useStyles = makeStyles(theme => ({
     },
     cancelButton: {
         marginLeft: '1.5rem',
-        color: theme.palette.primary.light,
     },
     inputDescription: {
         marginBottom: '0.5rem',

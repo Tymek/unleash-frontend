@@ -1,4 +1,8 @@
-import { IStrategyPayload, IFeatureStrategy } from 'interfaces/strategy';
+import {
+    IFeatureStrategyPayload,
+    IFeatureStrategy,
+    IFeatureStrategySortOrder,
+} from 'interfaces/strategy';
 import useAPI from '../useApi/useApi';
 
 const useFeatureStrategyApi = () => {
@@ -10,7 +14,7 @@ const useFeatureStrategyApi = () => {
         projectId: string,
         featureId: string,
         environmentId: string,
-        payload: IStrategyPayload
+        payload: IFeatureStrategyPayload
     ): Promise<IFeatureStrategy> => {
         const path = `api/admin/projects/${projectId}/features/${featureId}/environments/${environmentId}/strategies`;
         const req = createRequest(
@@ -41,7 +45,7 @@ const useFeatureStrategyApi = () => {
         featureId: string,
         environmentId: string,
         strategyId: string,
-        payload: IStrategyPayload
+        payload: IFeatureStrategyPayload
     ): Promise<void> => {
         const path = `api/admin/projects/${projectId}/features/${featureId}/environments/${environmentId}/strategies/${strategyId}`;
         const req = createRequest(
@@ -52,10 +56,26 @@ const useFeatureStrategyApi = () => {
         await makeRequest(req.caller, req.id);
     };
 
+    const setStrategiesSortOrder = async (
+        projectId: string,
+        featureId: string,
+        environmentId: string,
+        payload: IFeatureStrategySortOrder[]
+    ): Promise<void> => {
+        const path = `api/admin/projects/${projectId}/features/${featureId}/environments/${environmentId}/strategies/set-sort-order`;
+        const req = createRequest(
+            path,
+            { method: 'POST', body: JSON.stringify(payload) },
+            'setStrategiesSortOrderOnFeature'
+        );
+        await makeRequest(req.caller, req.id);
+    };
+
     return {
         addStrategyToFeature,
         updateStrategyOnFeature,
         deleteStrategyFromFeature,
+        setStrategiesSortOrder,
         loading,
         errors,
     };

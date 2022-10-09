@@ -1,8 +1,9 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     inputContainer: {
         padding: '1rem',
+        backgroundColor: theme.palette.neutral.light,
     },
     buttonContainer: {
         display: 'flex',

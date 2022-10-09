@@ -4,11 +4,7 @@ import { IConstraint } from 'interfaces/strategy';
 import { useStyles } from '../ConstraintAccordion.styles';
 import { ConstraintAccordionEditBody } from './ConstraintAccordionEditBody/ConstraintAccordionEditBody';
 import { ConstraintAccordionEditHeader } from './ConstraintAccordionEditHeader/ConstraintAccordionEditHeader';
-import {
-    Accordion,
-    AccordionDetails,
-    AccordionSummary,
-} from '@material-ui/core';
+import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material';
 import { cleanConstraint } from 'utils/cleanConstraint';
 import useFeatureApi from 'hooks/api/actions/useFeatureApi/useFeatureApi';
 import useUnleashContext from 'hooks/api/getters/useUnleashContext/useUnleashContext';
@@ -23,6 +19,7 @@ interface IConstraintAccordionEditProps {
     onCancel: () => void;
     onSave: (constraint: IConstraint) => void;
     compact: boolean;
+    onDelete?: () => void;
 }
 
 export const CANCEL = 'cancel';
@@ -52,6 +49,7 @@ export const ConstraintAccordionEdit = ({
     compact,
     onCancel,
     onSave,
+    onDelete,
 }: IConstraintAccordionEditProps) => {
     const [localConstraint, setLocalConstraint] = useState<IConstraint>(
         cleanConstraint(constraint)
@@ -64,7 +62,7 @@ export const ConstraintAccordionEdit = ({
     const { validateConstraint } = useFeatureApi();
     const [expanded, setExpanded] = useState(false);
     const [action, setAction] = useState('');
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
 
     useEffect(() => {
         // Setting expanded to true on mount will cause the accordion
@@ -207,6 +205,9 @@ export const ConstraintAccordionEdit = ({
                         setOperator={setOperator}
                         action={action}
                         compact={compact}
+                        setInvertedOperator={setInvertedOperator}
+                        setCaseInsensitive={setCaseInsensitive}
+                        onDelete={onDelete}
                     />
                 </AccordionSummary>
 
@@ -218,10 +219,8 @@ export const ConstraintAccordionEdit = ({
                         localConstraint={localConstraint}
                         setValues={setValues}
                         setValue={setValue}
-                        setCaseInsensitive={setCaseInsensitive}
                         triggerTransition={triggerTransition}
                         setAction={setAction}
-                        setInvertedOperator={setInvertedOperator}
                         onSubmit={onSubmit}
                     >
                         <ResolveInput
@@ -233,7 +232,6 @@ export const ConstraintAccordionEdit = ({
                             error={error}
                             contextDefinition={contextDefinition}
                             removeValue={removeValue}
-                            setCaseInsensitive={setCaseInsensitive}
                         />
                     </ConstraintAccordionEditBody>
                 </AccordionDetails>

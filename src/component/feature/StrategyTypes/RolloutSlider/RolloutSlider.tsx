@@ -1,9 +1,9 @@
-import { makeStyles, withStyles } from '@material-ui/core/styles';
-import { Slider, Typography } from '@material-ui/core';
+import { makeStyles, withStyles } from 'tss-react/mui';
+import { Slider, Typography } from '@mui/material';
 import { ROLLOUT_SLIDER_ID } from 'utils/testIds';
 import React from 'react';
 
-const StyledSlider = withStyles({
+const StyledSlider = withStyles(Slider, theme => ({
     root: {
         height: 8,
     },
@@ -12,27 +12,20 @@ const StyledSlider = withStyles({
         width: 24,
         backgroundColor: '#fff',
         border: '2px solid currentColor',
-        marginTop: -8,
-        marginLeft: -12,
-        '&:focus, &:hover, &$active': {
-            boxShadow: 'inherit',
-        },
     },
     active: {},
-    valueLabel: {
-        left: 'calc(-50% + 4px)',
-    },
+    valueLabel: {},
     track: {
         height: 8,
-        borderRadius: 4,
+        borderRadius: theme.shape.borderRadius,
     },
     rail: {
         height: 8,
-        borderRadius: 4,
+        borderRadius: theme.shape.borderRadius,
     },
-})(Slider);
+}));
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
     slider: {
         width: '100%',
         maxWidth: '100%',
@@ -70,7 +63,7 @@ interface IRolloutSliderProps {
     minLabel?: string;
     maxLabel?: string;
     value: number;
-    onChange: (e: React.ChangeEvent<{}>, newValue: number | number[]) => void;
+    onChange: (e: Event, newValue: number | number[]) => void;
     disabled?: boolean;
 }
 
@@ -80,7 +73,7 @@ const RolloutSlider = ({
     onChange,
     disabled = false,
 }: IRolloutSliderProps) => {
-    const classes = useStyles();
+    const { classes } = useStyles();
 
     const valuetext = (value: number) => `${value}%`;
 
@@ -88,12 +81,12 @@ const RolloutSlider = ({
         <div className={classes.slider}>
             <Typography
                 id="discrete-slider-always"
-                variant="subtitle2"
+                variant="h3"
                 gutterBottom
+                component="h3"
             >
                 {name}
             </Typography>
-            <br />
             <StyledSlider
                 min={0}
                 max={100}
@@ -101,7 +94,7 @@ const RolloutSlider = ({
                 getAriaValueText={valuetext}
                 aria-labelledby="discrete-slider-always"
                 step={1}
-                data-test={ROLLOUT_SLIDER_ID}
+                data-testid={ROLLOUT_SLIDER_ID}
                 marks={marks}
                 onChange={onChange}
                 valueLabelDisplay="on"

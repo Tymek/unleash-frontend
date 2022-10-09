@@ -1,7 +1,7 @@
 import { useStyles } from './FeatureStatus.styles';
 import TimeAgo from 'react-timeago';
-import ConditionallyRender from 'component/common/ConditionallyRender';
-import { Tooltip, TooltipProps } from '@material-ui/core';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
+import { Tooltip, TooltipProps } from '@mui/material';
 import React from 'react';
 
 function generateUnit(unit?: string): string {
@@ -46,16 +46,16 @@ function getColor(unit?: string): string {
     }
 }
 
-interface FeatureStatusProps {
-    lastSeenAt?: string;
+interface IFeatureStatusProps {
+    lastSeenAt?: string | Date | null;
     tooltipPlacement?: TooltipProps['placement'];
 }
 
 const FeatureStatus = ({
     lastSeenAt,
     tooltipPlacement,
-}: FeatureStatusProps) => {
-    const styles = useStyles();
+}: IFeatureStatusProps) => {
+    const { classes: styles } = useStyles();
 
     const Wrapper = (
         props: React.PropsWithChildren<{ color: string; toolTip: string }>
@@ -74,8 +74,8 @@ const FeatureStatus = ({
 
     return (
         <ConditionallyRender
-            condition={!!lastSeenAt}
-            show={
+            condition={Boolean(lastSeenAt)}
+            show={() => (
                 <TimeAgo
                     date={lastSeenAt!}
                     title=""
@@ -98,7 +98,7 @@ const FeatureStatus = ({
                         );
                     }}
                 />
-            }
+            )}
             elseShow={
                 <Wrapper
                     toolTip="No usage reported from connected applications"

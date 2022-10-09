@@ -1,10 +1,10 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
-        backgroundColor: theme.palette.primary.main,
+        backgroundColor: theme.palette.codebox,
         padding: '1rem',
-        borderRadius: '3px',
+        borderRadius: theme.shape.borderRadiusMedium,
         position: 'relative',
         maxHeight: '500px',
         overflow: 'auto',
@@ -13,7 +13,7 @@ export const useStyles = makeStyles(theme => ({
         margin: 0,
         wordBreak: 'break-all',
         whiteSpace: 'pre-wrap',
-        color: '#fff',
+        color: theme.palette.formSidebarTextColor,
         fontSize: 14,
     },
     icon: {

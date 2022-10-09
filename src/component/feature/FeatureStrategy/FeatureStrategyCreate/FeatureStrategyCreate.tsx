@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
 import { useRequiredQueryParam } from 'hooks/useRequiredQueryParam';
-import { useFeature } from 'hooks/api/getters/useFeature/useFeature';
 import { FeatureStrategyForm } from 'component/feature/FeatureStrategy/FeatureStrategyForm/FeatureStrategyForm';
 import FormTemplate from 'component/common/FormTemplate/FormTemplate';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import useFeatureStrategyApi from 'hooks/api/actions/useFeatureStrategyApi/useFeatureStrategyApi';
 import { formatUnknownError } from 'utils/formatUnknownError';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useToast from 'hooks/useToast';
 import { IFeatureStrategy } from 'interfaces/strategy';
 import {
@@ -15,13 +14,16 @@ import {
     featureStrategyHelp,
     formatFeaturePath,
     createStrategyPayload,
+    featureStrategyDocsLinkLabel,
 } from '../FeatureStrategyEdit/FeatureStrategyEdit';
-import { getStrategyObject } from 'utils/getStrategyObject';
-import { useStrategies } from 'hooks/api/getters/useStrategies/useStrategies';
 import { CREATE_FEATURE_STRATEGY } from 'component/providers/AccessProvider/permissions';
 import { ISegment } from 'interfaces/segment';
 import { useSegmentsApi } from 'hooks/api/actions/useSegmentsApi/useSegmentsApi';
 import { formatStrategyName } from 'utils/strategyNames';
+import { useFeatureImmutable } from 'hooks/api/getters/useFeature/useFeatureImmutable';
+import { useFormErrors } from 'hooks/useFormErrors';
+import { createFeatureStrategy } from 'utils/createFeatureStrategy';
+import { useStrategy } from 'hooks/api/getters/useStrategy/useStrategy';
 
 export const FeatureStrategyCreate = () => {
     const projectId = useRequiredPathParam('projectId');
@@ -30,20 +32,26 @@ export const FeatureStrategyCreate = () => {
     const strategyName = useRequiredQueryParam('strategyName');
     const [strategy, setStrategy] = useState<Partial<IFeatureStrategy>>({});
     const [segments, setSegments] = useState<ISegment[]>([]);
-    const { strategies } = useStrategies();
+    const { strategyDefinition } = useStrategy(strategyName);
+    const errors = useFormErrors();
 
     const { addStrategyToFeature, loading } = useFeatureStrategyApi();
     const { setStrategySegments } = useSegmentsApi();
-    const { feature, refetchFeature } = useFeature(projectId, featureId);
     const { setToastData, setToastApiError } = useToast();
     const { uiConfig } = useUiConfig();
     const { unleashUrl } = uiConfig;
-    const { push } = useHistory();
+    const navigate = useNavigate();
+
+    const { feature, refetchFeature } = useFeatureImmutable(
+        projectId,
+        featureId
+    );
 
     useEffect(() => {
-        // Fill in the default values once the strategies have been fetched.
-        setStrategy(getStrategyObject(strategies, strategyName, featureId));
-    }, [strategies, strategyName, featureId]);
+        if (strategyDefinition) {
+            setStrategy(createFeatureStrategy(featureId, strategyDefinition));
+        }
+    }, [featureId, strategyDefinition]);
 
     const onSubmit = async () => {
         try {
@@ -67,7 +75,7 @@ export const FeatureStrategyCreate = () => {
                 confetti: true,
             });
             refetchFeature();
-            push(formatFeaturePath(projectId, featureId));
+            navigate(formatFeaturePath(projectId, featureId));
         } catch (error: unknown) {
             setToastApiError(formatUnknownError(error));
         }
@@ -79,6 +87,7 @@ export const FeatureStrategyCreate = () => {
             title={formatStrategyName(strategyName)}
             description={featureStrategyHelp}
             documentationLink={featureStrategyDocsLink}
+            documentationLinkLabel={featureStrategyDocsLinkLabel}
             formatApiCode={() =>
                 formatAddStrategyApiCode(
                     projectId,
@@ -99,6 +108,7 @@ export const FeatureStrategyCreate = () => {
                 onSubmit={onSubmit}
                 loading={loading}
                 permission={CREATE_FEATURE_STRATEGY}
+                errors={errors}
             />
         </FormTemplate>
     );
@@ -115,7 +125,7 @@ export const formatCreateStrategyPath = (
     return `/projects/${projectId}/features/${featureId}/strategies/create?${params}`;
 };
 
-const formatAddStrategyApiCode = (
+export const formatAddStrategyApiCode = (
     projectId: string,
     featureId: string,
     environmentId: string,
@@ -126,7 +136,7 @@ const formatAddStrategyApiCode = (
         return '';
     }
 
-    const url = `${unleashUrl}/api/admin/projects/${projectId}/features/${featureId}/${environmentId}/development/strategies`;
+    const url = `${unleashUrl}/api/admin/projects/${projectId}/features/${featureId}/environments/${environmentId}/strategies`;
     const payload = JSON.stringify(strategy, undefined, 2);
 
     return `curl --location --request POST '${url}' \\

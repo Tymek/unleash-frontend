@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import {
     Avatar,
     Button,
@@ -8,19 +8,22 @@ import {
     Paper,
     Select,
     Typography,
-} from '@material-ui/core';
+    SelectChangeEvent,
+    Alert,
+} from '@mui/material';
 import classnames from 'classnames';
 import { useStyles } from 'component/user/UserProfile/UserProfileContent/UserProfileContent.styles';
-import { useCommonStyles } from 'themes/commonStyles';
-import { Alert } from '@material-ui/lab';
+import { useThemeStyles } from 'themes/themeStyles';
 import EditProfile from '../EditProfile/EditProfile';
 import legacyStyles from '../../user.module.scss';
-import { getBasePath } from 'utils/formatPath';
+import { basePath } from 'utils/formatPath';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import { IUser } from 'interfaces/user';
 import { ILocationSettings } from 'hooks/useLocationSettings';
+import { useTheme } from '@mui/material/styles';
 
 interface IUserProfileContentProps {
+    id: string;
     showProfile: boolean;
     profile: IUser;
     possibleLocales: string[];
@@ -33,6 +36,7 @@ interface IUserProfileContentProps {
 }
 
 const UserProfileContent = ({
+    id,
     showProfile,
     profile,
     possibleLocales,
@@ -41,11 +45,13 @@ const UserProfileContent = ({
     setCurrentLocale,
     setLocationSettings,
 }: IUserProfileContentProps) => {
-    const commonStyles = useCommonStyles();
+    const { classes: themeStyles } = useThemeStyles();
+    const theme = useTheme();
+
     const { uiConfig } = useUiConfig();
     const [updatedPassword, setUpdatedPassword] = useState(false);
     const [editingProfile, setEditingProfile] = useState(false);
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
 
     const profileAvatarClasses = classnames(styles.avatar, {
         [styles.editingAvatar]: editingProfile,
@@ -55,8 +61,8 @@ const UserProfileContent = ({
         [styles.editingEmail]: editingProfile,
     });
 
-    const handleChange = (e: React.ChangeEvent<{ value: unknown }>) => {
-        const locale = e.target.value as string;
+    const handleChange = (e: SelectChangeEvent) => {
+        const locale = e.target.value;
         setCurrentLocale(locale);
         setLocationSettings({ locale });
     };
@@ -66,15 +72,16 @@ const UserProfileContent = ({
             condition={showProfile}
             show={
                 <Paper
+                    id={id}
                     className={classnames(
                         styles.profile,
-                        commonStyles.flexColumn,
-                        commonStyles.itemsCenter,
-                        commonStyles.contentSpacingY
+                        themeStyles.flexColumn,
+                        themeStyles.itemsCenter,
+                        themeStyles.contentSpacingY
                     )}
                 >
                     <Avatar
-                        alt="user image"
+                        alt="Your Gravatar"
                         src={imageUrl}
                         className={profileAvatarClasses}
                     />
@@ -97,7 +104,6 @@ const UserProfileContent = ({
                                     condition={!uiConfig.disablePasswordAuth}
                                     show={
                                         <Button
-                                            variant="contained"
                                             onClick={() =>
                                                 setEditingProfile(true)
                                             }
@@ -106,7 +112,7 @@ const UserProfileContent = ({
                                         </Button>
                                     }
                                 />
-                                <div className={commonStyles.divider} />
+                                <div className={themeStyles.divider} />
                                 <div className={legacyStyles.showUserSettings}>
                                     <FormControl
                                         variant="outlined"
@@ -118,7 +124,11 @@ const UserProfileContent = ({
                                     >
                                         <InputLabel
                                             htmlFor="locale-select"
-                                            style={{ backgroundColor: '#fff' }}
+                                            style={{
+                                                backgroundColor:
+                                                    theme.palette
+                                                        .inputLabelBackground,
+                                            }}
                                         >
                                             Date/Time formatting
                                         </InputLabel>
@@ -146,7 +156,7 @@ const UserProfileContent = ({
                                         </Select>
                                     </FormControl>
                                 </div>
-                                <div className={commonStyles.divider} />
+                                <div className={themeStyles.divider} />
                                 <a
                                     className={styles.link}
                                     href="https://www.getunleash.io/privacy-policy"
@@ -155,12 +165,12 @@ const UserProfileContent = ({
                                 >
                                     Privacy policy
                                 </a>
-                                <div className={commonStyles.divider} />
+                                <div className={themeStyles.divider} />
 
                                 <Button
                                     variant="contained"
                                     color="primary"
-                                    href={`${getBasePath()}/logout`}
+                                    href={`${basePath}/logout`}
                                 >
                                     Logout
                                 </Button>

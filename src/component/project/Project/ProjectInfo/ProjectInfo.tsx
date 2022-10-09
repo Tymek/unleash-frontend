@@ -1,20 +1,20 @@
 import { useStyles } from './ProjectInfo.styles';
 import { Link } from 'react-router-dom';
-import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import classnames from 'classnames';
-import { Edit, ExpandMore } from '@material-ui/icons';
+import { Edit, ExpandMore } from '@mui/icons-material';
 
-import { useCommonStyles } from 'themes/commonStyles';
+import { useThemeStyles } from 'themes/themeStyles';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import PercentageCircle from 'component/common/PercentageCircle/PercentageCircle';
 import PermissionIconButton from 'component/common/PermissionIconButton/PermissionIconButton';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import {
     Accordion,
     AccordionActions,
     AccordionDetails,
     AccordionSummary,
-} from '@material-ui/core';
+} from '@mui/material';
 import { UPDATE_PROJECT } from 'component/providers/AccessProvider/permissions';
 
 interface IProjectInfoProps {
@@ -31,9 +31,9 @@ const ProjectInfo = ({
     health,
     description,
 }: IProjectInfoProps) => {
-    const commonStyles = useCommonStyles();
-    const styles = useStyles();
-    const { uiConfig } = useUiConfig();
+    const { classes: themeStyles } = useThemeStyles();
+    const { classes: styles } = useStyles();
+    const { uiConfig, isOss } = useUiConfig();
 
     let link = `/admin/users`;
 
@@ -49,17 +49,20 @@ const ProjectInfo = ({
         [styles.permissionButtonShortDesc]: isShortDescription,
     });
     const permissionButton = (
-        <PermissionIconButton
-            permission={UPDATE_PROJECT}
-            projectId={id}
-            // @ts-expect-error
-            component={Link}
-            className={permissionButtonClass}
-            data-loading
-            to={`/projects/${id}/edit`}
-        >
-            <Edit />
-        </PermissionIconButton>
+        <div>
+            <PermissionIconButton
+                permission={UPDATE_PROJECT}
+                hidden={isOss()}
+                projectId={id}
+                component={Link}
+                className={permissionButtonClass}
+                data-loading
+                to={`/projects/${id}/edit`}
+                tooltipProps={{ title: 'Edit description' }}
+            >
+                <Edit />
+            </PermissionIconButton>
+        </div>
     );
 
     return (
@@ -83,7 +86,9 @@ const ProjectInfo = ({
                                     elseShow={
                                         <Accordion className={styles.accordion}>
                                             <AccordionSummary
-                                                expandIcon={<ExpandMore />}
+                                                expandIcon={
+                                                    <ExpandMore titleAccess="Toggle" />
+                                                }
                                                 className={styles.accordionBody}
                                             >
                                                 Description
@@ -117,7 +122,7 @@ const ProjectInfo = ({
                         />
                     </div>
                     <div className={styles.idContainer}>
-                        <p data-loading>projectId: {id}</p>
+                        <p>projectId: {id}</p>
                     </div>
                 </div>
 
@@ -134,8 +139,8 @@ const ProjectInfo = ({
                     <Link
                         data-loading
                         className={classnames(
-                            commonStyles.flexRow,
-                            commonStyles.justifyCenter,
+                            themeStyles.flexRow,
+                            themeStyles.justifyCenter,
                             styles.infoLink
                         )}
                         to={`/projects/${id}/health`}
@@ -163,8 +168,8 @@ const ProjectInfo = ({
                     <Link
                         data-loading
                         className={classnames(
-                            commonStyles.flexRow,
-                            commonStyles.justifyCenter,
+                            themeStyles.flexRow,
+                            themeStyles.justifyCenter,
                             styles.infoLink
                         )}
                         to={link}

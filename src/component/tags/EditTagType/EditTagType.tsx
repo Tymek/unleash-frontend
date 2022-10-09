@@ -1,4 +1,4 @@
-import { useHistory, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { UPDATE_TAG_TYPE } from 'component/providers/AccessProvider/permissions';
 import useTagTypeForm from '../TagTypeForm/useTagTypeForm';
 import TagForm from '../TagTypeForm/TagTypeForm';
@@ -9,11 +9,14 @@ import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import useToast from 'hooks/useToast';
 import FormTemplate from 'component/common/FormTemplate/FormTemplate';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
+import { GO_BACK } from 'constants/navigate';
+
 const EditTagType = () => {
     const { setToastData, setToastApiError } = useToast();
     const { uiConfig } = useUiConfig();
-    const history = useHistory();
-    const { name } = useParams<{ name: string }>();
+    const navigate = useNavigate();
+    const name = useRequiredPathParam('name');
     const { tagType } = useTagType(name);
     const {
         tagName,
@@ -32,7 +35,7 @@ const EditTagType = () => {
         const payload = getTagPayload();
         try {
             await updateTagType(tagName, payload);
-            history.push('/tag-types');
+            navigate('/tag-types');
             setToastData({
                 title: 'Tag type updated',
                 type: 'success',
@@ -52,7 +55,7 @@ const EditTagType = () => {
     };
 
     const handleCancel = () => {
-        history.goBack();
+        navigate(GO_BACK);
     };
 
     return (
@@ -61,6 +64,7 @@ const EditTagType = () => {
             title="Edit tag type"
             description="Tag types allow you to group tags together in the management UI"
             documentationLink="https://docs.getunleash.io/"
+            documentationLinkLabel="Tags documentation"
             formatApiCode={formatApiCode}
         >
             <TagForm

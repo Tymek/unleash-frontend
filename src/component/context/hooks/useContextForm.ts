@@ -1,26 +1,28 @@
 import { useEffect, useState } from 'react';
 import useContextsApi from 'hooks/api/actions/useContextsApi/useContextsApi';
+import { ILegalValue } from 'interfaces/context';
+import { formatUnknownError } from 'utils/formatUnknownError';
 
 export const useContextForm = (
-    initialcontextName = '',
-    initialcontextDesc = '',
-    initialLegalValues = [] as string[],
+    initialContextName = '',
+    initialContextDesc = '',
+    initialLegalValues = [] as ILegalValue[],
     initialStickiness = false
 ) => {
-    const [contextName, setContextName] = useState(initialcontextName);
-    const [contextDesc, setContextDesc] = useState(initialcontextDesc);
+    const [contextName, setContextName] = useState(initialContextName);
+    const [contextDesc, setContextDesc] = useState(initialContextDesc);
     const [legalValues, setLegalValues] = useState(initialLegalValues);
     const [stickiness, setStickiness] = useState(initialStickiness);
     const [errors, setErrors] = useState({});
     const { validateContextName } = useContextsApi();
 
     useEffect(() => {
-        setContextName(initialcontextName);
-    }, [initialcontextName]);
+        setContextName(initialContextName);
+    }, [initialContextName]);
 
     useEffect(() => {
-        setContextDesc(initialcontextDesc);
-    }, [initialcontextDesc]);
+        setContextDesc(initialContextDesc);
+    }, [initialContextDesc]);
 
     useEffect(() => {
         setLegalValues(initialLegalValues);
@@ -40,8 +42,6 @@ export const useContextForm = (
         };
     };
 
-    const NAME_EXISTS_ERROR = 'A context field with that name already exist';
-
     const validateContext = async () => {
         if (contextName.length === 0) {
             setErrors(prev => ({ ...prev, name: 'Name can not be empty.' }));
@@ -50,24 +50,18 @@ export const useContextForm = (
         try {
             await validateContextName(contextName);
             return true;
-        } catch (e: any) {
-            if (e.toString().includes(NAME_EXISTS_ERROR)) {
-                setErrors(prev => ({
-                    ...prev,
-                    name: 'A context field with that name already exist',
-                }));
-            } else {
-                setErrors(prev => ({
-                    ...prev,
-                    name: e.toString(),
-                }));
-            }
+        } catch (error: unknown) {
+            setErrors(prev => ({ ...prev, name: formatUnknownError(error) }));
             return false;
         }
     };
 
-    const clearErrors = () => {
-        setErrors({});
+    const clearErrors = (key?: string) => {
+        if (key) {
+            setErrors(prev => ({ ...prev, [key]: undefined }));
+        } else {
+            setErrors({});
+        }
     };
 
     return {

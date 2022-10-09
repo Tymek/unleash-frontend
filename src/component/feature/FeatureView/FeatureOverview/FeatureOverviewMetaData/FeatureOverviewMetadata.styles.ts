@@ -1,15 +1,20 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
-        borderRadius: '10px',
+        borderRadius: theme.shape.borderRadiusLarge,
         color: '#fff',
-        backgroundColor: theme.palette.primary.light,
+        backgroundColor: theme.palette.featureMetaData,
         display: 'flex',
         flexDirection: 'column',
         maxWidth: '350px',
         minWidth: '350px',
         marginRight: '1rem',
+        [theme.breakpoints.down(1000)]: {
+            width: '100%',
+            maxWidth: 'none',
+            minWidth: 'auto',
+        },
     },
     paddingContainerTop: {
         padding: '1.5rem 1.5rem 0 1.5rem',
@@ -23,7 +28,7 @@ export const useStyles = makeStyles(theme => ({
         alignItems: 'center',
     },
     header: {
-        fontSize: theme.fontSizes.subHeader,
+        fontSize: theme.fontSizes.bodySize,
         fontWeight: 'normal',
         margin: 0,
     },
@@ -35,6 +40,7 @@ export const useStyles = makeStyles(theme => ({
     bodyItem: {
         margin: '0.5rem 0',
         fontSize: theme.fontSizes.bodySize,
+        wordBreak: 'break-all',
     },
     headerIcon: {
         marginRight: '1rem',
@@ -49,12 +55,5 @@ export const useStyles = makeStyles(theme => ({
     },
     editIcon: {
         color: '#fff',
-    },
-    [theme.breakpoints.down(1000)]: {
-        container: {
-            width: '100%',
-            maxWidth: 'none',
-            minWidth: 'auto',
-        },
     },
 }));

@@ -1,12 +1,14 @@
 import { ITagType } from './tags';
 
 export interface IAddon {
-    id: number;
     provider: string;
-    description: string;
-    enabled: boolean;
+    parameters: Record<string, any>;
+    id: number;
     events: string[];
-    parameters: object;
+    projects?: string[];
+    environments?: string[];
+    enabled: boolean;
+    description: string;
 }
 
 export interface IAddonProvider {
@@ -30,10 +32,12 @@ export interface IAddonProviderParams {
 }
 
 export interface IAddonConfig {
-    description: string;
-    enabled: boolean;
-    events: string[];
-    id: number;
-    parameters: Record<string, any>;
     provider: string;
+    parameters: Record<string, any>;
+    id: number;
+    events: string[];
+    projects?: string[];
+    environments?: string[];
+    enabled: boolean;
+    description: string;
 }

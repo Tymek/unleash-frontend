@@ -1,5 +1,5 @@
-import { useTheme } from '@material-ui/core/styles';
-import { Cloud } from '@material-ui/icons';
+import { useTheme } from '@mui/material/styles';
+import { Cloud } from '@mui/icons-material';
 
 interface IEnvironmentIcon {
     enabled: boolean;
@@ -9,10 +9,12 @@ interface IEnvironmentIcon {
 const EnvironmentIcon = ({ enabled, className }: IEnvironmentIcon) => {
     const theme = useTheme();
 
+    const title = enabled ? 'Environment enabled' : 'Environment disabled';
+
     const container = {
         backgroundColor: enabled
             ? theme.palette.primary.light
-            : theme.palette.grey[600],
+            : theme.palette.neutral.border,
         borderRadius: '50%',
         width: '28px',
         height: '28px',
@@ -20,18 +22,18 @@ const EnvironmentIcon = ({ enabled, className }: IEnvironmentIcon) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: '0.5rem',
+        marginRight: theme.spacing(1),
     };
 
     const icon = {
         fill: '#fff',
-        width: '17px',
-        height: '17px',
+        width: '16px',
+        height: '16px',
     };
 
     return (
         <div style={container} className={className}>
-            <Cloud style={icon} />
+            <Cloud style={icon} titleAccess={title} />
         </div>
     );
 };

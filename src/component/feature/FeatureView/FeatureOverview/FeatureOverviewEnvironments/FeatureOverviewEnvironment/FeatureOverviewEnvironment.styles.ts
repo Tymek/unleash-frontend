@@ -1,38 +1,64 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     featureOverviewEnvironment: {
-        borderRadius: '12.5px',
+        borderRadius: theme.shape.borderRadiusLarge,
+        marginBottom: theme.spacing(2),
         padding: '0.2rem',
-        marginBottom: '1rem',
-        backgroundColor: '#fff',
+        backgroundColor: theme.palette.background.paper,
     },
-    accordionContainer: {
-        width: '100%',
+    accordion: {
+        boxShadow: 'none',
+        background: 'none',
     },
     accordionHeader: {
         boxShadow: 'none',
         padding: '1rem 2rem',
+        [theme.breakpoints.down(400)]: {
+            padding: '0.5rem 1rem',
+        },
+    },
+    accordionBodyInnerContainer: {
+        [theme.breakpoints.down(400)]: {
+            padding: '0.5rem',
+        },
+    },
+    accordionDetails: {
+        padding: theme.spacing(3),
+        background: theme.palette.secondaryContainer,
+        borderBottomLeftRadius: theme.shape.borderRadiusLarge,
+        borderBottomRightRadius: theme.shape.borderRadiusLarge,
+        borderBottom: `4px solid ${theme.palette.primary.light}`,
+
+        [theme.breakpoints.down('md')]: {
+            padding: theme.spacing(2, 1),
+        },
+    },
+    accordionDetailsDisabled: {
+        borderBottom: `4px solid ${theme.palette.neutral.border}`,
     },
     accordionBody: {
         width: '100%',
         position: 'relative',
-        paddingBottom: '1rem',
+        paddingBottom: theme.spacing(2),
     },
     header: {
         display: 'flex',
         justifyContent: 'center',
         flexDirection: 'column',
-        paddingTop: '1.5rem',
     },
     headerTitle: {
         display: 'flex',
         alignItems: 'center',
+        [theme.breakpoints.down(560)]: {
+            flexDirection: 'column',
+            textAlign: 'center',
+        },
     },
-    disabledIndicatorPos: {
-        position: 'absolute',
-        top: '15px',
-        left: '20px',
+    headerIcon: {
+        [theme.breakpoints.down(560)]: {
+            marginBottom: '0.5rem',
+        },
     },
     iconContainer: {
         backgroundColor: theme.palette.primary.light,
@@ -49,71 +75,17 @@ export const useStyles = makeStyles(theme => ({
         width: '17px',
         height: '17px',
     },
-    resultInfo: {
-        display: 'flex',
-        alignItems: 'center',
-        margin: '1rem 0',
-    },
-    leftWing: {
-        height: '2px',
-        backgroundColor: theme.palette.grey[300],
-        width: '90%',
-    },
-    separatorText: {
-        fontSize: theme.fontSizes.smallBody,
-        padding: '0 1rem',
-    },
-    rightWing: {
-        height: '2px',
-        backgroundColor: theme.palette.grey[300],
-        width: '90%',
-    },
     linkContainer: {
         display: 'flex',
         justifyContent: 'flex-end',
         marginBottom: '1rem',
     },
-    strategyIconContainer: {
-        minWidth: '40px',
-        marginRight: '5px',
-        display: 'flex',
-        justifyContent: 'center',
-    },
-    strategiesIconsContainer: {
-        transform: 'scale(0.8)',
-        display: 'flex',
-        alignItems: 'center',
-        position: 'relative',
+    truncator: {
+        fontSize: theme.fontSizes.bodySize,
+        fontWeight: theme.typography.fontWeightMedium,
         [theme.breakpoints.down(560)]: {
-            marginLeft: '0px',
-            top: '5px',
-        },
-    },
-    [theme.breakpoints.down(560)]: {
-        disabledIndicatorPos: {
-            top: '13px',
-        },
-        headerTitle: {
-            flexDirection: 'column',
             textAlign: 'center',
         },
-        headerIcon: {
-            marginBottom: '0.5rem',
-        },
-        truncator: {
-            textAlign: 'center',
-        },
-    },
-    [theme.breakpoints.down(400)]: {
-        accordionHeader: {
-            padding: '0.5rem 1rem',
-        },
-        accordionBodyInnerContainer: {
-            padding: '0.5rem',
-        },
-    },
-    strategyIcon: {
-        fill: theme.palette.grey[600],
     },
     container: {
         display: 'flex',
@@ -123,8 +95,5 @@ export const useStyles = makeStyles(theme => ({
             flexDirection: 'column',
             marginLeft: '0',
         },
-    },
-    strategyMenu: {
-        marginRight: '-.5rem',
     },
 }));

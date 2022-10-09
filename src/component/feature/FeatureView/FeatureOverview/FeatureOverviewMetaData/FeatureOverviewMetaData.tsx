@@ -1,26 +1,23 @@
-import { capitalize } from '@material-ui/core';
+import { capitalize } from '@mui/material';
 import classnames from 'classnames';
-import { useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useFeature } from 'hooks/api/getters/useFeature/useFeature';
 import { getFeatureTypeIcons } from 'utils/getFeatureTypeIcons';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { useStyles } from './FeatureOverviewMetadata.styles';
-
-import { Edit } from '@material-ui/icons';
-import { IFeatureViewParams } from 'interfaces/params';
+import { Edit } from '@mui/icons-material';
 import PermissionIconButton from 'component/common/PermissionIconButton/PermissionIconButton';
 import { UPDATE_FEATURE } from 'component/providers/AccessProvider/permissions';
 import useTags from 'hooks/api/getters/useTags/useTags';
 import FeatureOverviewTags from './FeatureOverviewTags/FeatureOverviewTags';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
 
 const FeatureOverviewMetaData = () => {
-    const styles = useStyles();
-    const { projectId, featureId } = useParams<IFeatureViewParams>();
+    const { classes: styles } = useStyles();
+    const projectId = useRequiredPathParam('projectId');
+    const featureId = useRequiredPathParam('featureId');
     const { tags } = useTags(featureId);
-
     const { feature } = useFeature(projectId, featureId);
-
     const { project, description, type } = feature;
 
     const IconComponent = getFeatureTypeIcons(type);
@@ -30,17 +27,16 @@ const FeatureOverviewMetaData = () => {
             <div className={styles.paddingContainerTop}>
                 <div className={styles.metaDataHeader} data-loading>
                     <IconComponent className={styles.headerIcon} />{' '}
-                    <h3 className={styles.header}>
+                    <h2 className={styles.header}>
                         {capitalize(type || '')} toggle
-                    </h3>
+                    </h2>
                 </div>
                 <div className={styles.body}>
                     <span className={styles.bodyItem} data-loading>
                         Project: {project}
                     </span>
                     <ConditionallyRender
-                        // @ts-expect-error
-                        condition={description}
+                        condition={Boolean(description)}
                         show={
                             <span className={styles.bodyItem} data-loading>
                                 <div>Description:</div>
@@ -49,9 +45,11 @@ const FeatureOverviewMetaData = () => {
                                     <PermissionIconButton
                                         projectId={projectId}
                                         permission={UPDATE_FEATURE}
-                                        // @ts-expect-error
                                         component={Link}
                                         to={`/projects/${projectId}/features/${featureId}/settings`}
+                                        tooltipProps={{
+                                            title: 'Edit description',
+                                        }}
                                     >
                                         <Edit className={styles.editIcon} />
                                     </PermissionIconButton>
@@ -65,9 +63,11 @@ const FeatureOverviewMetaData = () => {
                                     <PermissionIconButton
                                         projectId={projectId}
                                         permission={UPDATE_FEATURE}
-                                        // @ts-expect-error
                                         component={Link}
                                         to={`/projects/${projectId}/features/${featureId}/settings`}
+                                        tooltipProps={{
+                                            title: 'Edit description',
+                                        }}
                                     >
                                         <Edit className={styles.editIcon} />
                                     </PermissionIconButton>

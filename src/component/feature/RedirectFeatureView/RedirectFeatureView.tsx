@@ -1,33 +1,31 @@
 import { useEffect, useState } from 'react';
-import { Redirect, useParams } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useFeatures } from 'hooks/api/getters/useFeatures/useFeatures';
-import { IFeatureToggle } from 'interfaces/featureToggle';
 import { getTogglePath } from 'utils/routePathHelpers';
-
-interface IRedirectParams {
-    name: string;
-}
+import { FeatureSchema } from 'openapi';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
 
 const RedirectFeatureView = () => {
-    const { name } = useParams<IRedirectParams>();
-    const { features } = useFeatures();
-    const [featureToggle, setFeatureToggle] = useState<IFeatureToggle>();
+    const featureId = useRequiredPathParam('featureId');
+    const { features = [] } = useFeatures();
+    const [featureToggle, setFeatureToggle] = useState<FeatureSchema>();
 
     useEffect(() => {
         const toggle = features.find(
-            (toggle: IFeatureToggle) => toggle.name === name
+            (toggle: FeatureSchema) => toggle.name === featureId
         );
 
         setFeatureToggle(toggle);
-    }, [features, name]);
+    }, [features, featureId]);
 
-    if (!featureToggle) {
+    if (!featureToggle?.project) {
         return null;
     }
 
     return (
-        <Redirect
-            to={getTogglePath(featureToggle?.project, featureToggle?.name)}
+        <Navigate
+            to={getTogglePath(featureToggle.project, featureToggle.name)}
+            replace
         />
     );
 };

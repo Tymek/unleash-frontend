@@ -10,6 +10,9 @@ export interface IUser {
     rootRole: number;
     seenAt: string | null;
     username?: string;
+    isAPI: boolean;
+    paid?: boolean;
+    addedAt?: string;
 }
 
 export interface IPermission {

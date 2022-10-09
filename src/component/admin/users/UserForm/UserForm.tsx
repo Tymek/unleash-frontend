@@ -7,13 +7,13 @@ import {
     Typography,
     Radio,
     Switch,
-} from '@material-ui/core';
+} from '@mui/material';
 import { useStyles } from './UserForm.styles';
 import React from 'react';
-import useUsers from 'hooks/api/getters/useUsers/useUsers';
-import ConditionallyRender from 'component/common/ConditionallyRender/ConditionallyRender';
+import { useUsers } from 'hooks/api/getters/useUsers/useUsers';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { EDIT } from 'constants/misc';
-import useUiBootstrap from 'hooks/api/getters/useUiBootstrap/useUiBootstrap';
+import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 
 interface IUserForm {
     email: string;
@@ -47,9 +47,9 @@ const UserForm: React.FC<IUserForm> = ({
     clearErrors,
     mode,
 }) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const { roles } = useUsers();
-    const { bootstrap } = useUiBootstrap();
+    const { uiConfig } = useUiConfig();
 
     // @ts-expect-error
     const sortRoles = (a, b) => {
@@ -127,7 +127,7 @@ const UserForm: React.FC<IUserForm> = ({
                     </RadioGroup>
                 </FormControl>
                 <ConditionallyRender
-                    condition={mode !== EDIT && bootstrap?.email}
+                    condition={mode !== EDIT && Boolean(uiConfig?.emailEnabled)}
                     show={
                         <FormControl>
                             <Typography

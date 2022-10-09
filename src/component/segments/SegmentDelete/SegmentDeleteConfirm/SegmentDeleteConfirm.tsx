@@ -1,30 +1,31 @@
 import React, { useState } from 'react';
-import Dialogue from 'component/common/Dialogue';
+import { Dialogue } from 'component/common/Dialogue/Dialogue';
 import Input from 'component/common/Input/Input';
 import { useStyles } from './SegmentDeleteConfirm.styles';
 import { ISegment } from 'interfaces/segment';
+import { SEGMENT_DIALOG_NAME_ID } from 'utils/testIds';
 
 interface ISegmentDeleteConfirmProps {
     segment: ISegment;
     open: boolean;
-    setDeldialogue: React.Dispatch<React.SetStateAction<boolean>>;
-    handleDeleteSegment: (id: number) => Promise<void>;
+    onClose: () => void;
+    onRemove: () => void;
 }
 
 export const SegmentDeleteConfirm = ({
     segment,
     open,
-    setDeldialogue,
-    handleDeleteSegment,
+    onClose,
+    onRemove,
 }: ISegmentDeleteConfirmProps) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const [confirmName, setConfirmName] = useState('');
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
         setConfirmName(e.currentTarget.value);
 
     const handleCancel = () => {
-        setDeldialogue(false);
+        onClose();
         setConfirmName('');
     };
     const formId = 'delete-segment-confirmation-form';
@@ -35,7 +36,7 @@ export const SegmentDeleteConfirm = ({
             primaryButtonText="Delete segment"
             secondaryButtonText="Cancel"
             onClick={() => {
-                handleDeleteSegment(segment.id);
+                onRemove();
                 setConfirmName('');
             }}
             disabledPrimaryButton={segment?.name !== confirmName}
@@ -44,7 +45,7 @@ export const SegmentDeleteConfirm = ({
         >
             <p className={styles.deleteParagraph}>
                 In order to delete this segment, please enter the name of the
-                segment in the textfield below: <strong>{segment?.name}</strong>
+                segment in the field below: <strong>{segment?.name}</strong>
             </p>
 
             <form id={formId}>
@@ -54,6 +55,7 @@ export const SegmentDeleteConfirm = ({
                     value={confirmName}
                     label="Segment name"
                     className={styles.deleteInput}
+                    data-testid={SEGMENT_DIALOG_NAME_ID}
                 />
             </form>
         </Dialogue>

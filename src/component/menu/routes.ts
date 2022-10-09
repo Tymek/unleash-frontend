@@ -1,23 +1,21 @@
-import { FeatureToggleListContainer } from 'component/feature/FeatureToggleList/FeatureToggleListContainer';
+import { FeatureToggleListTable } from 'component/feature/FeatureToggleList/FeatureToggleListTable';
 import { StrategyView } from 'component/strategies/StrategyView/StrategyView';
 import { StrategiesList } from 'component/strategies/StrategiesList/StrategiesList';
-import { ArchiveListContainer } from 'component/archive/ArchiveListContainer';
 import { TagTypeList } from 'component/tags/TagTypeList/TagTypeList';
 import { AddonList } from 'component/addons/AddonList/AddonList';
 import Admin from 'component/admin';
 import AdminApi from 'component/admin/api';
-import AdminInvoice from 'component/admin/invoice/InvoiceAdminPage';
 import AdminUsers from 'component/admin/users/UsersAdmin';
+import { GroupsAdmin } from 'component/admin/groups/GroupsAdmin';
 import { AuthSettings } from 'component/admin/auth/AuthSettings';
 import Login from 'component/user/Login/Login';
-import { C, EEA, P, RE, SE } from 'component/common/flags';
+import { C, EEA, P, RE, SE, UG } from 'component/common/flags';
 import { NewUser } from 'component/user/NewUser/NewUser';
 import ResetPassword from 'component/user/ResetPassword/ResetPassword';
 import ForgottenPassword from 'component/user/ForgottenPassword/ForgottenPassword';
 import { ProjectListNew } from 'component/project/ProjectList/ProjectList';
 import Project from 'component/project/Project/Project';
 import RedirectArchive from 'component/archive/RedirectArchive';
-import EnvironmentList from 'component/environments/EnvironmentList/EnvironmentList';
 import { FeatureView } from 'component/feature/FeatureView/FeatureView';
 import ProjectRoles from 'component/admin/projectRoles/ProjectRoles/ProjectRoles';
 import CreateProjectRole from 'component/admin/projectRoles/CreateProjectRole/CreateProjectRole';
@@ -41,35 +39,26 @@ import RedirectFeatureView from 'component/feature/RedirectFeatureView/RedirectF
 import { CreateAddon } from 'component/addons/CreateAddon/CreateAddon';
 import { EditAddon } from 'component/addons/EditAddon/EditAddon';
 import { CopyFeatureToggle } from 'component/feature/CopyFeature/CopyFeature';
-import { EventHistoryPage } from 'component/history/EventHistoryPage/EventHistoryPage';
-import { FeatureEventHistoryPage } from 'component/history/FeatureEventHistoryPage/FeatureEventHistoryPage';
+import { EventPage } from 'component/events/EventPage/EventPage';
 import { CreateStrategy } from 'component/strategies/CreateStrategy/CreateStrategy';
 import { EditStrategy } from 'component/strategies/EditStrategy/EditStrategy';
 import { SplashPage } from 'component/splash/SplashPage/SplashPage';
 import { CreateUnleashContextPage } from 'component/context/CreateUnleashContext/CreateUnleashContextPage';
 import { CreateSegment } from 'component/segments/CreateSegment/CreateSegment';
 import { EditSegment } from 'component/segments/EditSegment/EditSegment';
-import { SegmentsList } from 'component/segments/SegmentList/SegmentList';
-import { FunctionComponent } from 'react';
+import { IRoute } from 'interfaces/route';
+import { EnvironmentTable } from 'component/environments/EnvironmentTable/EnvironmentTable';
+import { SegmentTable } from 'component/segments/SegmentTable/SegmentTable';
+import FlaggedBillingRedirect from 'component/admin/billing/FlaggedBillingRedirect/FlaggedBillingRedirect';
+import { FeaturesArchiveTable } from '../archive/FeaturesArchiveTable';
+import { Billing } from 'component/admin/billing/Billing';
+import { Group } from 'component/admin/groups/Group/Group';
+import { CreateGroup } from 'component/admin/groups/CreateGroup/CreateGroup';
+import { EditGroup } from 'component/admin/groups/EditGroup/EditGroup';
+import { LazyPlayground } from 'component/playground/Playground/LazyPlayground';
+import { CorsAdmin } from 'component/admin/cors';
 
-interface Route {
-    path: string;
-    title: string;
-    type: string;
-    layout?: string;
-    parent?: string;
-    flag?: string;
-    hidden?: Boolean;
-    component: FunctionComponent;
-
-    menu: {
-        mobile?: boolean;
-        advanced?: boolean;
-        adminSettings?: boolean;
-    };
-}
-
-export const routes: Route[] = [
+export const routes: IRoute[] = [
     // Splash
     {
         path: '/splash/:splashId',
@@ -86,27 +75,29 @@ export const routes: Route[] = [
         title: 'Create',
         component: CreateProject,
         type: 'protected',
+        enterprise: true,
         menu: {},
     },
     {
-        path: '/projects/:id/edit',
+        path: '/projects/:projectId/edit',
         parent: '/projects',
-        title: ':id',
+        title: ':projectId',
         component: EditProject,
         type: 'protected',
+        enterprise: true,
         menu: {},
     },
     {
-        path: '/projects/:id/archived',
-        title: ':name',
+        path: '/projects/:projectId/archived',
+        title: ':projectId',
         parent: '/archive',
         component: RedirectArchive,
         type: 'protected',
         menu: {},
     },
     {
-        path: '/projects/:id/features/:name/:activeTab/copy',
-        parent: '/projects/:id/features/:name/:activeTab',
+        path: '/projects/:projectId/features/:featureId/:activeTab/copy',
+        parent: '/projects/:projectId/features/:featureId/:activeTab',
         title: 'Copy',
         component: CopyFeatureToggle,
         type: 'protected',
@@ -115,13 +106,13 @@ export const routes: Route[] = [
     {
         path: '/projects/:projectId/features/:featureId/edit',
         parent: '/projects',
-        title: 'Edit Feature',
+        title: 'Edit feature',
         component: EditFeature,
         type: 'protected',
         menu: {},
     },
     {
-        path: '/projects/:projectId/features/:featureId',
+        path: '/projects/:projectId/features/:featureId/*',
         parent: '/projects',
         title: 'FeatureView',
         component: FeatureView,
@@ -129,42 +120,25 @@ export const routes: Route[] = [
         menu: {},
     },
     {
-        path: '/projects/:id/features/:name/:activeTab',
-        parent: '/projects',
-        title: ':name',
-        component: FeatureView,
-        type: 'protected',
-        menu: {},
-    },
-    {
         path: '/projects/:projectId/create-toggle',
-        parent: '/projects/:id/features',
+        parent: '/projects/:projectId/features',
         title: 'Create feature toggle',
         component: CreateFeature,
         type: 'protected',
         menu: {},
     },
     {
-        path: '/projects/:projectId/features2/:name',
+        path: '/projects/:projectId/features2/:featureId',
         parent: '/features',
-        title: ':name',
+        title: ':featureId',
         component: RedirectFeatureView,
         type: 'protected',
         menu: {},
     },
     {
-        path: '/projects/:id/:activeTab',
+        path: '/projects/:projectId/*',
         parent: '/projects',
-        title: ':id',
-        component: Project,
-        flag: P,
-        type: 'protected',
-        menu: {},
-    },
-    {
-        path: '/projects/:id',
-        parent: '/projects',
-        title: ':id',
+        title: ':projectId',
         component: Project,
         flag: P,
         type: 'protected',
@@ -180,17 +154,27 @@ export const routes: Route[] = [
 
     // Features
     {
-        path: '/features/:activeTab/:name',
+        path: '/features/:activeTab/:featureId',
         parent: '/features',
-        title: ':name',
+        title: ':featureId',
         component: RedirectFeatureView,
         type: 'protected',
         menu: {},
     },
     {
         path: '/features',
-        title: 'Feature Toggles',
-        component: FeatureToggleListContainer,
+        title: 'Feature toggles',
+        component: FeatureToggleListTable,
+        type: 'protected',
+        menu: { mobile: true },
+    },
+
+    // Playground
+    {
+        path: '/playground',
+        title: 'Playground',
+        component: LazyPlayground,
+        hidden: false,
         type: 'protected',
         menu: { mobile: true },
     },
@@ -233,7 +217,7 @@ export const routes: Route[] = [
     },
     {
         path: '/context',
-        title: 'Context Fields',
+        title: 'Context fields',
         component: ContextList,
         type: 'protected',
         flag: C,
@@ -290,7 +274,7 @@ export const routes: Route[] = [
     {
         path: '/environments',
         title: 'Environments',
-        component: EnvironmentList,
+        component: EnvironmentTable,
         type: 'protected',
         flag: EEA,
         menu: { mobile: true, advanced: true },
@@ -371,7 +355,7 @@ export const routes: Route[] = [
     {
         path: '/segments',
         title: 'Segments',
-        component: SegmentsList,
+        component: SegmentTable,
         hidden: false,
         type: 'protected',
         menu: { mobile: true, advanced: true },
@@ -380,17 +364,9 @@ export const routes: Route[] = [
 
     // History
     {
-        path: '/history/:toggleName',
-        title: ':toggleName',
-        parent: '/history',
-        component: FeatureEventHistoryPage,
-        type: 'protected',
-        menu: {},
-    },
-    {
         path: '/history',
-        title: 'Event History',
-        component: EventHistoryPage,
+        title: 'Event log',
+        component: EventPage,
         type: 'protected',
         menu: { adminSettings: true },
     },
@@ -398,8 +374,8 @@ export const routes: Route[] = [
     // Archive
     {
         path: '/archive',
-        title: 'Archived Toggles',
-        component: ArchiveListContainer,
+        title: 'Archived toggles',
+        component: FeaturesArchiveTable,
         type: 'protected',
         menu: {},
     },
@@ -462,29 +438,82 @@ export const routes: Route[] = [
         menu: {},
     },
     {
+        path: '/admin/groups',
+        parent: '/admin',
+        title: 'Groups',
+        component: GroupsAdmin,
+        type: 'protected',
+        menu: { adminSettings: true },
+        flag: UG,
+    },
+    {
+        path: '/admin/groups/:groupId',
+        parent: '/admin',
+        title: ':groupId',
+        component: Group,
+        type: 'protected',
+        menu: {},
+        flag: UG,
+    },
+    {
+        path: '/admin/groups/create-group',
+        parent: '/admin/groups',
+        title: 'Create group',
+        component: CreateGroup,
+        type: 'protected',
+        menu: {},
+        flag: UG,
+    },
+    {
+        path: '/admin/groups/:groupId/edit',
+        parent: '/admin/groups',
+        title: 'Edit group',
+        component: EditGroup,
+        type: 'protected',
+        menu: {},
+        flag: UG,
+    },
+    {
+        path: '/admin/roles',
+        parent: '/admin',
+        title: 'Project roles',
+        component: ProjectRoles,
+        type: 'protected',
+        flag: RE,
+        menu: { adminSettings: true },
+    },
+    {
         path: '/admin/auth',
         parent: '/admin',
-        title: 'Single Sign-On',
+        title: 'Single sign-on',
         component: AuthSettings,
         type: 'protected',
         menu: { adminSettings: true },
     },
     {
-        path: '/admin-invoices',
-        title: 'Invoices',
-        component: AdminInvoice,
-        hidden: true,
+        path: '/admin/cors',
+        parent: '/admin',
+        title: 'CORS origins',
+        component: CorsAdmin,
         type: 'protected',
+        configFlag: 'embedProxy',
         menu: { adminSettings: true },
     },
     {
-        path: '/admin/roles',
+        path: '/admin/billing',
         parent: '/admin',
-        title: 'Project Roles',
-        component: ProjectRoles,
+        title: 'Billing',
+        component: Billing,
         type: 'protected',
-        flag: RE,
-        menu: { adminSettings: true },
+        menu: {},
+    },
+    {
+        path: '/admin-invoices',
+        parent: '/admin',
+        title: 'Billing & invoices',
+        component: FlaggedBillingRedirect,
+        type: 'protected',
+        menu: { adminSettings: true, isEnterprise: true },
     },
     {
         path: '/admin',

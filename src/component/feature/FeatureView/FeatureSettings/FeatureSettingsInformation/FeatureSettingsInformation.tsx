@@ -1,6 +1,6 @@
-import { Typography } from '@material-ui/core';
-import { Edit } from '@material-ui/icons';
-import { useHistory } from 'react-router-dom';
+import { Typography } from '@mui/material';
+import { Edit } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useFeature } from 'hooks/api/getters/useFeature/useFeature';
 import PermissionIconButton from 'component/common/PermissionIconButton/PermissionIconButton';
 import { UPDATE_FEATURE } from 'component/providers/AccessProvider/permissions';
@@ -15,12 +15,12 @@ export const FeatureSettingsInformation = ({
     projectId,
     featureId,
 }: IFeatureSettingsInformationProps) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const { feature } = useFeature(projectId, featureId);
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const onEdit = () => {
-        history.push(`/projects/${projectId}/features/${featureId}/edit`);
+        navigate(`/projects/${projectId}/features/${featureId}/edit`);
     };
 
     return (
@@ -34,8 +34,9 @@ export const FeatureSettingsInformation = ({
                     projectId={projectId}
                     data-loading
                     onClick={onEdit}
+                    tooltipProps={{ title: 'Edit' }}
                 >
-                    <Edit titleAccess="Edit" />
+                    <Edit />
                 </PermissionIconButton>
             </div>
             <Typography>
@@ -44,7 +45,7 @@ export const FeatureSettingsInformation = ({
             <Typography>
                 Description:{' '}
                 <strong>
-                    {feature.description.length === 0
+                    {!feature.description?.length
                         ? 'no description'
                         : feature.description}
                 </strong>

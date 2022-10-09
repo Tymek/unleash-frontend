@@ -1,38 +1,26 @@
-import {
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemSecondaryAction,
-    ListItemText,
-} from '@material-ui/core';
-import { Delete, Edit, Visibility, VisibilityOff } from '@material-ui/icons';
-import ConditionallyRender from 'component/common/ConditionallyRender/ConditionallyRender';
-import {
-    DELETE_ADDON,
-    UPDATE_ADDON,
-} from 'component/providers/AccessProvider/permissions';
-import { Link, useHistory } from 'react-router-dom';
-import PageContent from 'component/common/PageContent/PageContent';
+import { Table, TableBody, TableCell, TableRow } from 'component/common/Table';
+import { useMemo, useState, useCallback } from 'react';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
+import { PageContent } from 'component/common/PageContent/PageContent';
 import useAddons from 'hooks/api/getters/useAddons/useAddons';
 import useToast from 'hooks/useToast';
 import useAddonsApi from 'hooks/api/actions/useAddonsApi/useAddonsApi';
-import { ReactElement, useContext, useState } from 'react';
-import AccessContext from 'contexts/AccessContext';
 import { IAddon } from 'interfaces/addons';
-import PermissionIconButton from 'component/common/PermissionIconButton/PermissionIconButton';
-import Dialogue from 'component/common/Dialogue';
+import { Dialogue } from 'component/common/Dialogue/Dialogue';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { LinkCell } from 'component/common/Table/cells/LinkCell/LinkCell';
+import { sortTypes } from 'utils/sortTypes';
+import { useTable, useSortBy } from 'react-table';
+import { PageHeader } from 'component/common/PageHeader/PageHeader';
+import { SortableTableHeader, TablePlaceholder } from 'component/common/Table';
+import { IconCell } from 'component/common/Table/cells/IconCell/IconCell';
+import { AddonIcon } from '../AddonIcon/AddonIcon';
+import { ConfiguredAddonsActionsCell } from './ConfiguredAddonsActionCell/ConfiguredAddonsActionsCell';
 
-interface IConfigureAddonsProps {
-    getAddonIcon: (name: string) => ReactElement;
-}
-
-export const ConfiguredAddons = ({ getAddonIcon }: IConfigureAddonsProps) => {
-    const { refetchAddons, addons } = useAddons();
+export const ConfiguredAddons = () => {
+    const { refetchAddons, addons, loading } = useAddons();
     const { updateAddon, removeAddon } = useAddonsApi();
     const { setToastData, setToastApiError } = useToast();
-    const { hasAccess } = useContext(AccessContext);
-    const history = useHistory();
     const [showDelete, setShowDelete] = useState(false);
     const [deletedAddon, setDeletedAddon] = useState<IAddon>({
         id: 0,
@@ -43,27 +31,124 @@ export const ConfiguredAddons = ({ getAddonIcon }: IConfigureAddonsProps) => {
         parameters: {},
     });
 
-    const sortAddons = (addons: IAddon[]) => {
-        if (!addons) return [];
-
-        return addons.sort((addonA: IAddon, addonB: IAddon) => {
-            return addonA.id - addonB.id;
-        });
-    };
-
-    const toggleAddon = async (addon: IAddon) => {
-        try {
-            await updateAddon({ ...addon, enabled: !addon.enabled });
-            refetchAddons();
-            setToastData({
-                type: 'success',
-                title: 'Success',
-                text: 'Addon state switched successfully',
+    const data = useMemo(() => {
+        if (loading) {
+            return Array(5).fill({
+                name: 'Addon name',
+                description: 'Addon description when loading',
             });
-        } catch (error: unknown) {
-            setToastApiError(formatUnknownError(error));
         }
-    };
+
+        return addons.map(addon => ({
+            ...addon,
+        }));
+    }, [addons, loading]);
+
+    const toggleAddon = useCallback(
+        async (addon: IAddon) => {
+            try {
+                await updateAddon({ ...addon, enabled: !addon.enabled });
+                refetchAddons();
+                setToastData({
+                    type: 'success',
+                    title: 'Success',
+                    text: !addon.enabled
+                        ? 'Addon is now enabled'
+                        : 'Addon is now disabled',
+                });
+            } catch (error: unknown) {
+                setToastApiError(formatUnknownError(error));
+                throw error; // caught by optimistic update
+            }
+        },
+        [setToastApiError, refetchAddons, setToastData, updateAddon]
+    );
+
+    const columns = useMemo(
+        () => [
+            {
+                id: 'Icon',
+                Cell: ({
+                    row: {
+                        original: { provider },
+                    },
+                }: any) => (
+                    <IconCell icon={<AddonIcon name={provider as string} />} />
+                ),
+            },
+            {
+                Header: 'Name',
+                accessor: 'provider',
+                width: '90%',
+                Cell: ({
+                    row: {
+                        original: { provider, description },
+                    },
+                }: any) => {
+                    return (
+                        <LinkCell
+                            data-loading
+                            title={provider}
+                            subtitle={description}
+                        />
+                    );
+                },
+                sortType: 'alphanumeric',
+            },
+            {
+                Header: 'Actions',
+                id: 'Actions',
+                align: 'center',
+                Cell: ({
+                    row: { original },
+                }: {
+                    row: { original: IAddon };
+                }) => (
+                    <ConfiguredAddonsActionsCell
+                        setShowDelete={setShowDelete}
+                        toggleAddon={toggleAddon}
+                        setDeletedAddon={setDeletedAddon}
+                        original={original}
+                    />
+                ),
+                width: 150,
+                disableSortBy: true,
+            },
+            {
+                accessor: 'description',
+                disableSortBy: true,
+            },
+        ],
+        [toggleAddon]
+    );
+
+    const initialState = useMemo(
+        () => ({
+            sortBy: [{ id: 'provider', desc: false }],
+            hiddenColumns: ['description'],
+        }),
+        []
+    );
+
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        rows,
+        prepareRow,
+        state: { globalFilter },
+    } = useTable(
+        {
+            columns: columns as any[], // TODO: fix after `react-table` v8 update
+            data,
+            initialState,
+            sortTypes,
+            autoResetGlobalFilter: false,
+            autoResetSortBy: false,
+            disableSortRemove: true,
+        },
+        useSortBy
+    );
 
     const onRemoveAddon = async (addon: IAddon) => {
         try {
@@ -74,77 +159,57 @@ export const ConfiguredAddons = ({ getAddonIcon }: IConfigureAddonsProps) => {
                 title: 'Success',
                 text: 'Deleted addon successfully',
             });
-        } catch (e) {
-            setToastData({
-                type: 'error',
-                title: 'Error',
-                text: 'Can not delete addon',
-            });
+        } catch (error: unknown) {
+            setToastApiError(formatUnknownError(error));
         }
     };
 
-    const renderAddon = (addon: IAddon) => (
-        <ListItem key={addon.id}>
-            <ListItemAvatar>{getAddonIcon(addon.provider)}</ListItemAvatar>
-            <ListItemText
-                primary={
-                    <span>
-                        <ConditionallyRender
-                            condition={hasAccess(UPDATE_ADDON)}
-                            show={
-                                <Link
-                                    style={{
-                                        textDecoration: 'none',
-                                        color: 'inherit',
-                                    }}
-                                    to={`/addons/edit/${addon.id}`}
-                                >
-                                    <strong>{addon.provider}</strong>
-                                </Link>
-                            }
-                            elseShow={<strong>{addon.provider}</strong>}
-                        />
-                        {addon.enabled ? null : <small> (Disabled)</small>}
-                    </span>
-                }
-                secondary={addon.description}
-            />
-            <ListItemSecondaryAction>
-                <PermissionIconButton
-                    permission={UPDATE_ADDON}
-                    onClick={() => toggleAddon(addon)}
-                >
-                    <ConditionallyRender
-                        condition={addon.enabled}
-                        show={<Visibility titleAccess="Disable addon" />}
-                        elseShow={<VisibilityOff titleAccess="Enable addon" />}
-                    />
-                </PermissionIconButton>
-                <PermissionIconButton
-                    permission={UPDATE_ADDON}
-                    onClick={() => {
-                        history.push(`/addons/edit/${addon.id}`);
-                    }}
-                >
-                    <Edit titleAccess="Edit Addon" />
-                </PermissionIconButton>
-                <PermissionIconButton
-                    permission={DELETE_ADDON}
-                    onClick={() => {
-                        setDeletedAddon(addon);
-                        setShowDelete(true);
-                    }}
-                >
-                    <Delete titleAccess="Remove Addon" />
-                </PermissionIconButton>
-            </ListItemSecondaryAction>
-        </ListItem>
-    );
     return (
-        <PageContent headerContent="Configured addons">
-            <List>
-                {sortAddons(addons).map((addon: IAddon) => renderAddon(addon))}
-            </List>
+        <PageContent
+            isLoading={loading}
+            header={<PageHeader title="Configured addons" />}
+            sx={theme => ({ marginBottom: theme.spacing(2) })}
+        >
+            <Table {...getTableProps()}>
+                <SortableTableHeader headerGroups={headerGroups} />
+                <TableBody {...getTableBodyProps()}>
+                    {rows.map(row => {
+                        prepareRow(row);
+                        return (
+                            <TableRow hover {...row.getRowProps()}>
+                                {row.cells.map(cell => (
+                                    <TableCell
+                                        {...cell.getCellProps()}
+                                        padding="none"
+                                    >
+                                        {cell.render('Cell')}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        );
+                    })}
+                </TableBody>
+            </Table>
+            <ConditionallyRender
+                condition={rows.length === 0}
+                show={
+                    <ConditionallyRender
+                        condition={globalFilter?.length > 0}
+                        show={
+                            <TablePlaceholder>
+                                No addons found matching &ldquo;
+                                {globalFilter}
+                                &rdquo;
+                            </TablePlaceholder>
+                        }
+                        elseShow={
+                            <TablePlaceholder>
+                                No addons configured
+                            </TablePlaceholder>
+                        }
+                    />
+                }
+            />
             <Dialogue
                 open={showDelete}
                 onClick={() => {

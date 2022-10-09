@@ -21,7 +21,7 @@ export const FeatureStrategyMenuCard = ({
     environmentId,
     strategy,
 }: IFeatureStrategyMenuCardProps) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const StrategyIcon = getFeatureStrategyIcon(strategy.name);
     const strategyName = formatStrategyName(strategy.name);
 
@@ -35,7 +35,7 @@ export const FeatureStrategyMenuCard = ({
     return (
         <Link to={createStrategyPath} className={styles.card}>
             <div className={styles.icon}>
-                <StrategyIcon aria-hidden />
+                <StrategyIcon />
             </div>
             <div>
                 <StringTruncator

@@ -1,15 +1,23 @@
+import { ReactNode } from 'react';
+
 export interface IUiConfig {
-    authenticationType: string;
-    baseUriPath: string;
+    authenticationType?: string;
+    baseUriPath?: string;
     flags: IFlags;
     name: string;
     slogan: string;
-    unleashUrl: string;
+    environment?: string;
+    unleashUrl?: string;
     version: string;
-    versionInfo: IVersionInfo;
+    versionInfo?: IVersionInfo;
     links: ILinks[];
     disablePasswordAuth?: boolean;
+    emailEnabled?: boolean;
     toast?: IProclamationToast;
+    segmentValuesLimit?: number;
+    strategySegmentsLimit?: number;
+    frontendApiOrigins?: string[];
+    embedProxy?: boolean;
 }
 
 export interface IProclamationToast {
@@ -28,6 +36,10 @@ export interface IFlags {
     OIDC?: boolean;
     CO?: boolean;
     SE?: boolean;
+    T?: boolean;
+    UNLEASH_CLOUD?: boolean;
+    UG?: boolean;
+    ENABLE_DARK_MODE_SUPPORT?: boolean;
 }
 
 export interface IVersionInfo {
@@ -44,7 +56,7 @@ export interface IVersion {
 
 export interface ILinks {
     value: string;
-    icon: string;
+    icon: ReactNode;
     href: string;
     title: string;
 }

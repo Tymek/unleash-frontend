@@ -1,61 +1,94 @@
-import { useHistory, useParams } from 'react-router';
+import { useNavigate } from 'react-router';
 import useProject from 'hooks/api/getters/useProject/useProject';
 import useLoading from 'hooks/useLoading';
 import ApiError from 'component/common/ApiError/ApiError';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { useStyles } from './Project.styles';
-import { Tab, Tabs } from '@material-ui/core';
-import { Edit } from '@material-ui/icons';
+import { styled, Tab, Tabs } from '@mui/material';
+import { Delete, Edit } from '@mui/icons-material';
 import useToast from 'hooks/useToast';
 import useQueryParams from 'hooks/useQueryParams';
-import { useEffect } from 'react';
-import useTabs from 'hooks/useTabs';
-import TabPanel from 'component/common/TabNav/TabPanel';
+import { useEffect, useState } from 'react';
 import { ProjectAccess } from '../ProjectAccess/ProjectAccess';
 import ProjectEnvironment from '../ProjectEnvironment/ProjectEnvironment';
+import { ProjectFeaturesArchive } from './ProjectFeaturesArchive/ProjectFeaturesArchive';
 import ProjectOverview from './ProjectOverview';
 import ProjectHealth from './ProjectHealth/ProjectHealth';
 import PermissionIconButton from 'component/common/PermissionIconButton/PermissionIconButton';
-import { UPDATE_PROJECT } from 'component/providers/AccessProvider/permissions';
+import {
+    DELETE_PROJECT,
+    UPDATE_PROJECT,
+} from 'component/providers/AccessProvider/permissions';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
+import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { DeleteProjectDialogue } from './DeleteProject/DeleteProjectDialogue';
+
+const StyledDiv = styled('div')(() => ({
+    display: 'flex',
+}));
+
+const StyledName = styled('div')(({ theme }) => ({
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    paddingBottom: theme.spacing(2),
+}));
+
+const StyledTitle = styled('span')(({ theme }) => ({
+    fontSize: theme.fontSizes.smallBody,
+    fontWeight: 'normal',
+}));
+const StyledText = styled(StyledTitle)(({ theme }) => ({
+    color: theme.palette.grey[800],
+}));
 
 const Project = () => {
-    const { id, activeTab } = useParams<{ id: string; activeTab: string }>();
+    const projectId = useRequiredPathParam('projectId');
     const params = useQueryParams();
-    const { project, error, loading, refetch } = useProject(id);
+    const { project, error, loading, refetch } = useProject(projectId);
     const ref = useLoading(loading);
     const { setToastData } = useToast();
-    const styles = useStyles();
-    const history = useHistory();
+    const { classes: styles } = useStyles();
+    const navigate = useNavigate();
+    const { pathname } = useLocation();
+    const { isOss } = useUiConfig();
+    const basePath = `/projects/${projectId}`;
+    const projectName = project?.name || projectId;
 
-    const { a11yProps, activeTabIdx, setActiveTab } = useTabs(0);
+    const [showDelDialog, setShowDelDialog] = useState(false);
 
-    const basePath = `/projects/${id}`;
-    const tabData = [
+    const tabs = [
         {
             title: 'Overview',
-            component: <ProjectOverview projectId={id} />,
             path: basePath,
             name: 'overview',
         },
         {
             title: 'Health',
-            component: <ProjectHealth projectId={id} />,
             path: `${basePath}/health`,
             name: 'health',
         },
         {
             title: 'Access',
-            component: <ProjectAccess />,
             path: `${basePath}/access`,
             name: 'access',
         },
         {
             title: 'Environments',
-            component: <ProjectEnvironment projectId={id} />,
             path: `${basePath}/environments`,
             name: 'environments',
         },
+        {
+            title: 'Archive',
+            path: `${basePath}/archive`,
+            name: 'archive',
+        },
     ];
+
+    const activeTab = [...tabs]
+        .reverse()
+        .find(tab => pathname.startsWith(tab.path));
 
     useEffect(() => {
         const created = params.get('created');
@@ -69,69 +102,68 @@ const Project = () => {
             });
         }
 
-        // @ts-expect-error
-        tabData.filter(tab => !tab.disabled);
-
         /* eslint-disable-next-line */
     }, []);
-
-    useEffect(() => {
-        const tabIdx = tabData.findIndex(tab => tab.name === activeTab);
-        if (tabIdx > 0) {
-            setActiveTab(tabIdx);
-        } else {
-            setActiveTab(0);
-        }
-
-        /* eslint-disable-next-line */
-    }, []);
-
-    const renderTabs = () => {
-        return tabData.map((tab, index) => {
-            return (
-                <Tab
-                    data-loading
-                    key={tab.title}
-                    label={tab.title}
-                    {...a11yProps(index)}
-                    onClick={() => {
-                        setActiveTab(index);
-                        history.push(tab.path);
-                    }}
-                    className={styles.tabButton}
-                />
-            );
-        });
-    };
-
-    const renderTabContent = () => {
-        return tabData.map((tab, index) => {
-            return (
-                <TabPanel value={activeTabIdx} index={index} key={tab.path}>
-                    {tab.component}
-                </TabPanel>
-            );
-        });
-    };
 
     return (
         <div ref={ref}>
             <div className={styles.header}>
                 <div className={styles.innerContainer}>
-                    <h2
-                        data-loading
-                        className={styles.title}
-                        style={{ margin: 0 }}
-                    >
-                        <div className={styles.titleText}>{project?.name}</div>
-                        <PermissionIconButton
-                            permission={UPDATE_PROJECT}
-                            projectId={project?.id}
-                            onClick={() => history.push(`/projects/${id}/edit`)}
-                            data-loading
-                        >
-                            <Edit />
-                        </PermissionIconButton>
+                    <h2 className={styles.title}>
+                        <div>
+                            <StyledName data-loading>{projectName}</StyledName>
+                            <ConditionallyRender
+                                condition={Boolean(project.description)}
+                                show={
+                                    <StyledDiv>
+                                        <StyledTitle data-loading>
+                                            Description:&nbsp;
+                                        </StyledTitle>
+                                        <StyledText data-loading>
+                                            {project.description}
+                                        </StyledText>
+                                    </StyledDiv>
+                                }
+                            />
+                            <StyledDiv>
+                                <StyledTitle data-loading>
+                                    projectId:&nbsp;
+                                </StyledTitle>
+                                <StyledText data-loading>
+                                    {projectId}
+                                </StyledText>
+                            </StyledDiv>
+                        </div>
+                        <StyledDiv>
+                            <PermissionIconButton
+                                permission={UPDATE_PROJECT}
+                                projectId={projectId}
+                                sx={{
+                                    visibility: isOss() ? 'hidden' : 'visible',
+                                }}
+                                onClick={() =>
+                                    navigate(`/projects/${projectId}/edit`)
+                                }
+                                tooltipProps={{ title: 'Edit project' }}
+                                data-loading
+                            >
+                                <Edit />
+                            </PermissionIconButton>
+                            <PermissionIconButton
+                                permission={DELETE_PROJECT}
+                                projectId={projectId}
+                                sx={{
+                                    visibility: isOss() ? 'hidden' : 'visible',
+                                }}
+                                onClick={() => {
+                                    setShowDelDialog(true);
+                                }}
+                                tooltipProps={{ title: 'Delete project' }}
+                                data-loading
+                            >
+                                <Delete />
+                            </PermissionIconButton>
+                        </StyledDiv>
                     </h2>
                 </div>
                 <ConditionallyRender
@@ -139,7 +171,7 @@ const Project = () => {
                     show={
                         <ApiError
                             data-loading
-                            style={{ maxWidth: '400px', marginTop: '1rem' }}
+                            style={{ maxWidth: '400px', margin: '1rem' }}
                             onClick={refetch}
                             text="Could not fetch project"
                         />
@@ -148,18 +180,39 @@ const Project = () => {
                 <div className={styles.separator} />
                 <div className={styles.tabContainer}>
                     <Tabs
-                        value={activeTabIdx}
-                        onChange={(_, tabId) => {
-                            setActiveTab(tabId);
-                        }}
+                        value={activeTab?.path}
                         indicatorColor="primary"
                         textColor="primary"
                     >
-                        {renderTabs()}
+                        {tabs.map(tab => (
+                            <Tab
+                                key={tab.title}
+                                label={tab.title}
+                                value={tab.path}
+                                onClick={() => navigate(tab.path)}
+                                className={styles.tabButton}
+                            />
+                        ))}
                     </Tabs>
                 </div>
             </div>
-            {renderTabContent()}
+            <DeleteProjectDialogue
+                project={projectId}
+                open={showDelDialog}
+                onClose={() => {
+                    setShowDelDialog(false);
+                }}
+                onSuccess={() => {
+                    navigate('/projects');
+                }}
+            />
+            <Routes>
+                <Route path="health" element={<ProjectHealth />} />
+                <Route path="access/*" element={<ProjectAccess />} />
+                <Route path="environments" element={<ProjectEnvironment />} />
+                <Route path="archive" element={<ProjectFeaturesArchive />} />
+                <Route path="*" element={<ProjectOverview />} />
+            </Routes>
         </div>
     );
 };

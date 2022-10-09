@@ -1,17 +1,18 @@
 import { useStyles } from './Toast.styles';
 import classnames from 'classnames';
 import { useContext } from 'react';
-import { IconButton } from '@material-ui/core';
+import { IconButton, Tooltip } from '@mui/material';
 import CheckMarkBadge from 'component/common/CheckmarkBadge/CheckMarkBadge';
 import UIContext from 'contexts/UIContext';
-import ConditionallyRender from 'component/common/ConditionallyRender';
-import Close from '@material-ui/icons/Close';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
+import Close from '@mui/icons-material/Close';
 import { IToast } from 'interfaces/toast';
+import { TOAST_TEXT } from 'utils/testIds';
 
 const Toast = ({ title, text, type, confetti }: IToast) => {
     const { setToast } = useContext(UIContext);
 
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const confettiColors = ['#d13447', '#ffbf00', '#263672'];
     const confettiAmount = 200;
 
@@ -72,18 +73,21 @@ const Toast = ({ title, text, type, confetti }: IToast) => {
 
                                 <ConditionallyRender
                                     condition={Boolean(text)}
-                                    show={<p>{text}</p>}
+                                    show={
+                                        <p data-testid={TOAST_TEXT}>{text}</p>
+                                    }
                                 />
                             </div>
                         </div>
-
-                        <IconButton
-                            color="primary"
-                            onClick={hide}
-                            className={styles.buttonStyle}
-                        >
-                            <Close />
-                        </IconButton>
+                        <Tooltip title="Close" arrow>
+                            <IconButton
+                                onClick={hide}
+                                className={styles.buttonStyle}
+                                size="large"
+                            >
+                                <Close />
+                            </IconButton>
+                        </Tooltip>
                     </div>
                 </div>
             </div>

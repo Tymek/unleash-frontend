@@ -5,20 +5,21 @@ import {
     ListItemAvatar,
     ListItemText,
     Tooltip,
-} from '@material-ui/core';
-import { Add, RadioButtonChecked } from '@material-ui/icons';
+    useTheme,
+} from '@mui/material';
+import { Add, RadioButtonChecked } from '@mui/icons-material';
 import { AppsLinkList } from 'component/common';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import styles from '../../strategies.module.scss';
 import { TogglesLinkList } from 'component/strategies/TogglesLinkList/TogglesLinkList';
-import { IParameter, IStrategy } from 'interfaces/strategy';
+import { IStrategy, IStrategyParameter } from 'interfaces/strategy';
 import { IApplication } from 'interfaces/application';
-import { IFeatureToggle } from 'interfaces/featureToggle';
+import { FeatureSchema } from 'openapi';
 
 interface IStrategyDetailsProps {
     strategy: IStrategy;
     applications: IApplication[];
-    toggles: IFeatureToggle[];
+    toggles: FeatureSchema[];
 }
 
 export const StrategyDetails = ({
@@ -26,26 +27,27 @@ export const StrategyDetails = ({
     applications,
     toggles,
 }: IStrategyDetailsProps) => {
+    const theme = useTheme();
     const { parameters = [] } = strategy;
-    const renderParameters = (params: IParameter[]) => {
+    const renderParameters = (params: IStrategyParameter[]) => {
         if (params.length > 0) {
             return params.map(({ name, type, description, required }, i) => (
                 <ListItem key={`${name}-${i}`}>
                     <ConditionallyRender
                         condition={required}
                         show={
-                            <Tooltip title="Required">
-                                <ListItemAvatar>
-                                    <Add />
-                                </ListItemAvatar>
-                            </Tooltip>
+                            <ListItemAvatar>
+                                <Tooltip title="Required parameter" arrow>
+                                    <Add aria-hidden={false} />
+                                </Tooltip>
+                            </ListItemAvatar>
                         }
                         elseShow={
-                            <Tooltip title="Optional">
-                                <ListItemAvatar>
-                                    <RadioButtonChecked />
-                                </ListItemAvatar>
-                            </Tooltip>
+                            <ListItemAvatar>
+                                <Tooltip title="Optional parameter" arrow>
+                                    <RadioButtonChecked aria-hidden={false} />
+                                </Tooltip>
+                            </ListItemAvatar>
                         }
                     />
                     <ListItemText
@@ -70,7 +72,9 @@ export const StrategyDetails = ({
                     condition={strategy.deprecated}
                     show={
                         <Grid item>
-                            <h5 style={{ color: '#ff0000' }}>Deprecated</h5>
+                            <h5 style={{ color: theme.palette.error.main }}>
+                                Deprecated
+                            </h5>
                         </Grid>
                     }
                 />

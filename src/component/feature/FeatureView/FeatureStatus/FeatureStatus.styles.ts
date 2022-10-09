@@ -1,12 +1,12 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
         width: '42px',
         height: '42px',
         fontSize: '0.7em',
         background: 'gray',
-        borderRadius: '3px',
+        borderRadius: theme.shape.borderRadius,
         textAlign: 'center',
         display: 'flex',
         alignItems: 'center',

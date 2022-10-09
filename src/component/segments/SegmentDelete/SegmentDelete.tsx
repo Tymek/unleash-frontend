@@ -1,4 +1,4 @@
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { useStrategiesBySegment } from 'hooks/api/getters/useStrategiesBySegment/useStrategiesBySegment';
 import { ISegment } from 'interfaces/segment';
 import React from 'react';
@@ -8,14 +8,14 @@ import { SegmentDeleteUsedSegment } from './SegmentDeleteUsedSegment/SegmentDele
 interface ISegmentDeleteProps {
     segment: ISegment;
     open: boolean;
-    setDeldialogue: React.Dispatch<React.SetStateAction<boolean>>;
-    handleDeleteSegment: (id: number) => Promise<void>;
+    onClose: () => void;
+    onRemove: () => void;
 }
 export const SegmentDelete = ({
     segment,
     open,
-    setDeldialogue,
-    handleDeleteSegment,
+    onClose,
+    onRemove,
 }: ISegmentDeleteProps) => {
     const { strategies } = useStrategiesBySegment(segment.id);
     const canDeleteSegment = strategies?.length === 0;
@@ -26,15 +26,15 @@ export const SegmentDelete = ({
                 <SegmentDeleteConfirm
                     segment={segment}
                     open={open}
-                    setDeldialogue={setDeldialogue}
-                    handleDeleteSegment={handleDeleteSegment}
+                    onClose={onClose}
+                    onRemove={onRemove}
                 />
             }
             elseShow={
                 <SegmentDeleteUsedSegment
                     segment={segment}
                     open={open}
-                    setDeldialogue={setDeldialogue}
+                    onClose={onClose}
                     strategies={strategies}
                 />
             }

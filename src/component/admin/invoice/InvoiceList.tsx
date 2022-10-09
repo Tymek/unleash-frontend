@@ -6,11 +6,11 @@ import {
     TableRow,
     TableCell,
     Button,
-} from '@material-ui/core';
-import OpenInNew from '@material-ui/icons/OpenInNew';
-import PageContent from 'component/common/PageContent';
-import HeaderTitle from 'component/common/HeaderTitle';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+} from '@mui/material';
+import OpenInNew from '@mui/icons-material/OpenInNew';
+import { PageContent } from 'component/common/PageContent/PageContent';
+import { PageHeader } from 'component/common/PageHeader/PageHeader';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { formatApiPath } from 'utils/formatPath';
 import useInvoices from 'hooks/api/getters/useInvoices/useInvoices';
 import { IInvoice } from 'interfaces/invoice';
@@ -35,8 +35,8 @@ const InvoiceList = () => {
             condition={invoices.length > 0}
             show={
                 <PageContent
-                    headerContent={
-                        <HeaderTitle
+                    header={
+                        <PageHeader
                             title="Invoices"
                             actions={
                                 <Button
@@ -76,7 +76,7 @@ const InvoiceList = () => {
                                         <TableCell
                                             style={{ textAlign: 'left' }}
                                         >
-                                            {item.amountFomratted}
+                                            {item.amountFormatted}
                                         </TableCell>
                                         <TableCell
                                             style={{ textAlign: 'left' }}

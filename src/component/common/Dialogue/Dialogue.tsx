@@ -5,9 +5,9 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-} from '@material-ui/core';
+} from '@mui/material';
 
-import ConditionallyRender from '../ConditionallyRender/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { useStyles } from './Dialogue.styles';
 import { DIALOGUE_CONFIRM_ID } from 'utils/testIds';
 
@@ -15,8 +15,8 @@ interface IDialogue {
     primaryButtonText?: string;
     secondaryButtonText?: string;
     open: boolean;
-    onClick: (e: React.SyntheticEvent) => void;
-    onClose?: (e: React.SyntheticEvent) => void;
+    onClick?: (e: React.SyntheticEvent) => void;
+    onClose?: (e: React.SyntheticEvent, reason?: string) => void;
     style?: object;
     title: string;
     fullWidth?: boolean;
@@ -24,10 +24,9 @@ interface IDialogue {
     disabledPrimaryButton?: boolean;
     formId?: string;
     permissionButton?: JSX.Element;
-    hideSecondaryButton?: boolean;
 }
 
-const Dialogue: React.FC<IDialogue> = ({
+export const Dialogue: React.FC<IDialogue> = ({
     children,
     open,
     onClick,
@@ -40,13 +39,14 @@ const Dialogue: React.FC<IDialogue> = ({
     fullWidth = false,
     formId,
     permissionButton,
-    hideSecondaryButton,
 }) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const handleClick = formId
         ? (e: React.SyntheticEvent) => {
               e.preventDefault();
-              onClick(e);
+              if (onClick) {
+                  onClick(e);
+              }
           }
         : onClick;
     return (
@@ -83,7 +83,7 @@ const Dialogue: React.FC<IDialogue> = ({
                                     onClick={handleClick}
                                     autoFocus={!formId}
                                     disabled={disabledPrimaryButton}
-                                    data-test={DIALOGUE_CONFIRM_ID}
+                                    data-testid={DIALOGUE_CONFIRM_ID}
                                     type={formId ? 'submit' : 'button'}
                                 >
                                     {primaryButtonText || "Yes, I'm sure"}
@@ -94,7 +94,7 @@ const Dialogue: React.FC<IDialogue> = ({
                 />
 
                 <ConditionallyRender
-                    condition={Boolean(onClose || !hideSecondaryButton)}
+                    condition={Boolean(onClose)}
                     show={
                         <Button onClick={onClose}>
                             {secondaryButtonText || 'No, take me back'}
@@ -105,5 +105,3 @@ const Dialogue: React.FC<IDialogue> = ({
         </Dialog>
     );
 };
-
-export default Dialogue;

@@ -1,16 +1,19 @@
 import React, { ReactNode } from 'react';
 import classnames from 'classnames';
-import { makeStyles } from '@material-ui/core/styles';
-import { Grid } from '@material-ui/core';
-import styles from 'component/styles.module.scss';
+import { makeStyles } from 'tss-react/mui';
+import { Grid } from '@mui/material';
+import { useStyles as useAppStyles } from 'component/App.styles';
 import Header from 'component/menu/Header/Header';
 import Footer from 'component/menu/Footer/Footer';
 import Proclamation from 'component/common/Proclamation/Proclamation';
 import BreadcrumbNav from 'component/common/BreadcrumbNav/BreadcrumbNav';
-import { ReactComponent as Texture } from 'assets/img/texture.svg';
+import textureImage from 'assets/img/texture.png';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
+import { SkipNavLink } from 'component/common/SkipNav/SkipNavLink';
+import { SkipNavTarget } from 'component/common/SkipNav/SkipNavTarget';
+import { formatAssetPath } from 'utils/formatPath';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
     container: {
         height: '100%',
         justifyContent: 'space-between',
@@ -19,7 +22,7 @@ const useStyles = makeStyles(theme => ({
         height: '100%',
         padding: '3.25rem 0',
         position: 'relative',
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
             padding: '3.25rem 0.75rem',
         },
     },
@@ -30,17 +33,20 @@ interface IMainLayoutProps {
 }
 
 export const MainLayout = ({ children }: IMainLayoutProps) => {
-    const muiStyles = useStyles();
+    const { classes } = useStyles();
+    const { classes: styles } = useAppStyles();
     const { uiConfig } = useUiConfig();
 
     return (
         <>
+            <SkipNavLink />
             <Header />
-            <Grid container className={muiStyles.container}>
-                <div className={classnames(styles.contentWrapper)}>
+            <SkipNavTarget />
+            <Grid container className={classes.container}>
+                <main className={classnames(styles.contentWrapper)}>
                     <Grid item className={styles.content} xs={12} sm={12}>
                         <div
-                            className={muiStyles.contentContainer}
+                            className={classes.contentContainer}
                             style={{ zIndex: 200 }}
                         >
                             <BreadcrumbNav />
@@ -48,19 +54,21 @@ export const MainLayout = ({ children }: IMainLayoutProps) => {
                             {children}
                         </div>
                     </Grid>
-                    <div style={{ overflow: 'hidden' }}>
-                        <div
-                            style={{
-                                position: 'fixed',
-                                right: '0',
-                                bottom: '-4px',
-                                zIndex: 1,
-                            }}
-                        >
-                            <Texture />
-                        </div>
-                    </div>
-                </div>
+                    <img
+                        src={formatAssetPath(textureImage)}
+                        alt=""
+                        style={{
+                            display: 'block',
+                            position: 'fixed',
+                            zIndex: 0,
+                            bottom: 0,
+                            right: 0,
+                            width: 400,
+                            pointerEvents: 'none',
+                            userSelect: 'none',
+                        }}
+                    />
+                </main>
                 <Footer />
             </Grid>
         </>

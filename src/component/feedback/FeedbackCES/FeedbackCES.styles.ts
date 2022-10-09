@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     overlay: {
         pointerEvents: 'none',
         display: 'grid',
@@ -15,10 +15,10 @@ export const useStyles = makeStyles(theme => ({
         pointerEvents: 'auto',
         position: 'relative',
         padding: '4rem',
-        background: 'white',
+        background: theme.palette.background.paper,
         boxShadow: '0 0 1rem rgba(0, 0, 0, 0.25)',
         borderRadius: '1rem',
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
             padding: '2rem',
         },
     },
@@ -27,11 +27,9 @@ export const useStyles = makeStyles(theme => ({
         position: 'absolute',
         top: 0,
         right: 0,
-        padding: '1rem',
-        cursor: 'pointer',
     },
     closeIcon: {
         fontSize: '1.5rem',
-        color: theme.palette.grey[600],
+        color: theme.palette.inactiveIcon,
     },
 }));

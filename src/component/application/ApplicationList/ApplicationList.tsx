@@ -1,28 +1,45 @@
-import { useMemo, useState } from 'react';
-import { CircularProgress } from '@material-ui/core';
-import { Warning } from '@material-ui/icons';
-import { AppsLinkList, styles as commonStyles } from 'component/common';
-import { SearchField } from 'component/common/SearchField/SearchField';
-import PageContent from 'component/common/PageContent/PageContent';
-import HeaderTitle from 'component/common/HeaderTitle';
+import { useEffect, useMemo, useState } from 'react';
+import { CircularProgress } from '@mui/material';
+import { Warning } from '@mui/icons-material';
+import { AppsLinkList, styles as themeStyles } from 'component/common';
+import { PageContent } from 'component/common/PageContent/PageContent';
+import { PageHeader } from 'component/common/PageHeader/PageHeader';
 import useApplications from 'hooks/api/getters/useApplications/useApplications';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
+import { useSearchParams } from 'react-router-dom';
+import { Search } from 'component/common/Search/Search';
+
+type PageQueryType = Partial<Record<'search', string>>;
 
 export const ApplicationList = () => {
     const { applications, loading } = useApplications();
-    const [filter, setFilter] = useState('');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchValue, setSearchValue] = useState(
+        searchParams.get('search') || ''
+    );
+
+    useEffect(() => {
+        const tableState: PageQueryType = {};
+        if (searchValue) {
+            tableState.search = searchValue;
+        }
+
+        setSearchParams(tableState, {
+            replace: true,
+        });
+    }, [searchValue, setSearchParams]);
 
     const filteredApplications = useMemo(() => {
-        const regExp = new RegExp(filter, 'i');
-        return filter
+        const regExp = new RegExp(searchValue, 'i');
+        return searchValue
             ? applications?.filter(a => regExp.test(a.appName))
             : applications;
-    }, [applications, filter]);
+    }, [applications, searchValue]);
 
     const renderNoApplications = () => (
         <>
             <section style={{ textAlign: 'center' }}>
-                <Warning /> <br />
+                <Warning titleAccess="Warning" /> <br />
                 <br />
                 Oh snap, it does not seem like you have connected any
                 applications. To connect your application to Unleash you will
@@ -44,11 +61,20 @@ export const ApplicationList = () => {
 
     return (
         <>
-            <div className={commonStyles.searchField}>
-                <SearchField initialValue={filter} updateValue={setFilter} />
-            </div>
-            <PageContent headerContent={<HeaderTitle title="Applications" />}>
-                <div className={commonStyles.fullwidth}>
+            <PageContent
+                header={
+                    <PageHeader
+                        title="Applications"
+                        actions={
+                            <Search
+                                initialValue={searchValue}
+                                onChange={setSearchValue}
+                            />
+                        }
+                    />
+                }
+            >
+                <div className={themeStyles.fullwidth}>
                     <ConditionallyRender
                         condition={filteredApplications.length > 0}
                         show={<AppsLinkList apps={filteredApplications} />}

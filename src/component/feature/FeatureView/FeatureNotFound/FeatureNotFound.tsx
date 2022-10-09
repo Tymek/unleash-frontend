@@ -1,15 +1,16 @@
 import React from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { getCreateTogglePath } from 'utils/routePathHelpers';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import { useStyles } from 'component/feature/FeatureView/FeatureNotFound/FeatureNotFound.styles';
-import { IFeatureViewParams } from 'interfaces/params';
 import { useFeaturesArchive } from 'hooks/api/getters/useFeaturesArchive/useFeaturesArchive';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
 
 export const FeatureNotFound = () => {
-    const { projectId, featureId } = useParams<IFeatureViewParams>();
+    const projectId = useRequiredPathParam('projectId');
+    const featureId = useRequiredPathParam('featureId');
     const { archivedFeatures } = useFeaturesArchive();
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const { uiConfig } = useUiConfig();
 
     const createFeatureTogglePath = getCreateTogglePath(
@@ -17,6 +18,10 @@ export const FeatureNotFound = () => {
         uiConfig.flags.E,
         { name: featureId }
     );
+
+    if (!archivedFeatures) {
+        return null;
+    }
 
     const isArchived = archivedFeatures.some(archivedFeature => {
         return archivedFeature.name === featureId;

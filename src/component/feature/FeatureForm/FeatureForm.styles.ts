@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
         maxWidth: '400px',
     },
@@ -16,9 +16,6 @@ export const useStyles = makeStyles(theme => ({
         [theme.breakpoints.down(600)]: {
             minWidth: '379px',
         },
-    },
-    link: {
-        color: theme.palette.primary.light,
     },
     label: {
         minWidth: '300px',
@@ -36,10 +33,11 @@ export const useStyles = makeStyles(theme => ({
     },
     inputDescription: {
         marginBottom: '0.5rem',
+        color: theme.palette.text.secondary,
     },
     typeDescription: {
         fontSize: theme.fontSizes.smallBody,
-        color: theme.palette.grey[600],
+        color: theme.palette.text.secondary,
         top: '-13px',
         position: 'relative',
     },

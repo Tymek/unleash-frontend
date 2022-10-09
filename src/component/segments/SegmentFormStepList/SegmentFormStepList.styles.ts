@@ -1,7 +1,7 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 import { formTemplateSidebarWidth } from 'component/common/FormTemplate/FormTemplate.styles';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
         display: 'flex',
         position: 'absolute',
@@ -17,7 +17,7 @@ export const useStyles = makeStyles(theme => ({
     steps: {
         position: 'relative',
         borderRadius: 10,
-        background: '#fff',
+        background: theme.palette.background.paper,
         padding: '0.6rem 1.5rem',
         margin: 'auto',
         display: 'flex',

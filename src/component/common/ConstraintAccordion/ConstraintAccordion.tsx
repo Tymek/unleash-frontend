@@ -1,5 +1,5 @@
 import { IConstraint } from 'interfaces/strategy';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 
 import { ConstraintAccordionEdit } from './ConstraintAccordionEdit/ConstraintAccordionEdit';
 import { ConstraintAccordionView } from './ConstraintAccordionView/ConstraintAccordionView';
@@ -7,7 +7,6 @@ import { ConstraintAccordionView } from './ConstraintAccordionView/ConstraintAcc
 interface IConstraintAccordionProps {
     compact: boolean;
     editing: boolean;
-    environmentId?: string;
     constraint: IConstraint;
     onCancel: () => void;
     onEdit?: () => void;
@@ -19,7 +18,6 @@ export const ConstraintAccordion = ({
     constraint,
     compact = false,
     editing,
-    environmentId,
     onEdit,
     onCancel,
     onDelete,
@@ -35,6 +33,7 @@ export const ConstraintAccordion = ({
                     constraint={constraint}
                     onCancel={onCancel}
                     onSave={onSave!}
+                    onDelete={onDelete}
                     compact={compact}
                 />
             }
@@ -43,8 +42,6 @@ export const ConstraintAccordion = ({
                     constraint={constraint}
                     onEdit={onEdit}
                     onDelete={onDelete}
-                    environmentId={environmentId}
-                    compact={compact}
                 />
             }
         />

@@ -1,18 +1,20 @@
-import { Card, Menu, MenuItem } from '@material-ui/core';
+import { Card, Menu, MenuItem } from '@mui/material';
 import { useStyles } from './ProjectCard.styles';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { ReactComponent as ProjectIcon } from 'assets/icons/projectIcon.svg';
-import { useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import Dialogue from 'component/common/Dialogue';
-import useProjectApi from 'hooks/api/actions/useProjectApi/useProjectApi';
-import useProjects from 'hooks/api/getters/useProjects/useProjects';
-import { Delete, Edit } from '@material-ui/icons';
+import React, { useState, SyntheticEvent, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Delete, Edit } from '@mui/icons-material';
 import { getProjectEditPath } from 'utils/routePathHelpers';
 import PermissionIconButton from 'component/common/PermissionIconButton/PermissionIconButton';
-import useToast from 'hooks/useToast';
-import { UPDATE_PROJECT } from 'component/providers/AccessProvider/permissions';
-import { formatUnknownError } from 'utils/formatUnknownError';
+import {
+    UPDATE_PROJECT,
+    DELETE_PROJECT,
+} from 'component/providers/AccessProvider/permissions';
+import AccessContext from 'contexts/AccessContext';
+import { DEFAULT_PROJECT_ID } from 'hooks/api/getters/useDefaultProject/useDefaultProjectId';
+import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
+import { DeleteProjectDialogue } from '../Project/DeleteProject/DeleteProjectDialogue';
 
 interface IProjectCardProps {
     name: string;
@@ -31,48 +33,36 @@ export const ProjectCard = ({
     onHover,
     id,
 }: IProjectCardProps) => {
-    const styles = useStyles();
-    const { refetch: refetchProjectOverview } = useProjects();
-    const [anchorEl, setAnchorEl] = useState(null);
+    const { classes } = useStyles();
+    const { hasAccess } = useContext(AccessContext);
+    const { isOss } = useUiConfig();
+    const [anchorEl, setAnchorEl] = useState<Element | null>(null);
     const [showDelDialog, setShowDelDialog] = useState(false);
-    const { deleteProject } = useProjectApi();
-    const history = useHistory();
-    const { setToastData, setToastApiError } = useToast();
+    const navigate = useNavigate();
 
-    // @ts-expect-error
-    const handleClick = e => {
-        e.preventDefault();
-        setAnchorEl(e.currentTarget);
+    const handleClick = (event: React.SyntheticEvent) => {
+        event.preventDefault();
+        setAnchorEl(event.currentTarget);
     };
 
-    const onRemoveProject = async (e: Event) => {
-        e.preventDefault();
-        try {
-            await deleteProject(id);
-            refetchProjectOverview();
-            setToastData({
-                title: 'Deleted project',
-                type: 'success',
-                text: 'Successfully deleted project',
-            });
-        } catch (e: unknown) {
-            setToastApiError(formatUnknownError(e));
-        }
-        setShowDelDialog(false);
-        setAnchorEl(null);
-    };
+    const canDeleteProject =
+        hasAccess(DELETE_PROJECT, id) && id !== DEFAULT_PROJECT_ID;
 
     return (
-        <Card className={styles.projectCard} onMouseEnter={onHover}>
-            <div className={styles.header} data-loading>
-                <div className={styles.title}>{name}</div>
+        <Card className={classes.projectCard} onMouseEnter={onHover}>
+            <div className={classes.header} data-loading>
+                <h2 className={classes.title}>{name}</h2>
 
                 <PermissionIconButton
                     permission={UPDATE_PROJECT}
+                    hidden={isOss()}
                     projectId={id}
-                    className={styles.actionsBtn}
                     data-loading
                     onClick={handleClick}
+                    tooltipProps={{
+                        title: 'Options',
+                        className: classes.actionsBtn,
+                    }}
                 >
                     <MoreVertIcon />
                 </PermissionIconButton>
@@ -81,20 +71,22 @@ export const ProjectCard = ({
                     id="project-card-menu"
                     open={Boolean(anchorEl)}
                     anchorEl={anchorEl}
-                    style={{ top: '40px', left: '-60px' }}
-                    onClose={e => {
-                        // @ts-expect-error
-                        e.preventDefault();
+                    style={{ top: 0, left: -100 }}
+                    onClick={event => {
+                        event.preventDefault();
+                    }}
+                    onClose={(event: SyntheticEvent) => {
+                        event.preventDefault();
                         setAnchorEl(null);
                     }}
                 >
                     <MenuItem
                         onClick={e => {
                             e.preventDefault();
-                            history.push(getProjectEditPath(id));
+                            navigate(getProjectEditPath(id));
                         }}
                     >
-                        <Edit className={styles.icon} />
+                        <Edit className={classes.icon} />
                         Edit project
                     </MenuItem>
                     <MenuItem
@@ -102,45 +94,46 @@ export const ProjectCard = ({
                             e.preventDefault();
                             setShowDelDialog(true);
                         }}
+                        disabled={!canDeleteProject}
                     >
-                        <Delete className={styles.icon} />
-                        Delete project
+                        <Delete className={classes.icon} />
+                        {id === DEFAULT_PROJECT_ID && !canDeleteProject
+                            ? "You can't delete the default project"
+                            : 'Delete project'}
                     </MenuItem>
                 </Menu>
             </div>
             <div data-loading>
-                <ProjectIcon className={styles.projectIcon} />
+                <ProjectIcon className={classes.projectIcon} />
             </div>
-            <div className={styles.info}>
-                <div className={styles.infoBox}>
-                    <p className={styles.infoStats} data-loading>
+            <div className={classes.info}>
+                <div className={classes.infoBox}>
+                    <p className={classes.infoStats} data-loading>
                         {featureCount}
                     </p>
                     <p data-loading>toggles</p>
                 </div>
-                <div className={styles.infoBox}>
-                    <p className={styles.infoStats} data-loading>
+                <div className={classes.infoBox}>
+                    <p className={classes.infoStats} data-loading>
                         {health}%
                     </p>
                     <p data-loading>health</p>
                 </div>
 
-                <div className={styles.infoBox}>
-                    <p className={styles.infoStats} data-loading>
+                <div className={classes.infoBox}>
+                    <p className={classes.infoStats} data-loading>
                         {memberCount}
                     </p>
                     <p data-loading>members</p>
                 </div>
             </div>
-            <Dialogue
+            <DeleteProjectDialogue
+                project={id}
                 open={showDelDialog}
-                // @ts-expect-error
-                onClick={onRemoveProject}
                 onClose={() => {
                     setAnchorEl(null);
                     setShowDelDialog(false);
                 }}
-                title="Really delete project"
             />
         </Card>
     );

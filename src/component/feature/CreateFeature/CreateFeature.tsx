@@ -1,5 +1,5 @@
 import FormTemplate from 'component/common/FormTemplate/FormTemplate';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import FeatureForm from '../FeatureForm/FeatureForm';
 import useFeatureForm from '../hooks/useFeatureForm';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
@@ -11,12 +11,13 @@ import { CreateButton } from 'component/common/CreateButton/CreateButton';
 import UIContext from 'contexts/UIContext';
 import { CF_CREATE_BTN_ID } from 'utils/testIds';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { GO_BACK } from 'constants/navigate';
 
 const CreateFeature = () => {
     const { setToastData, setToastApiError } = useToast();
     const { setShowFeedback } = useContext(UIContext);
     const { uiConfig } = useUiConfig();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const {
         type,
@@ -45,9 +46,8 @@ const CreateFeature = () => {
         if (validToggleName) {
             const payload = getTogglePayload();
             try {
-                // @ts-expect-error
                 await createFeatureToggle(project, payload);
-                history.push(`/projects/${project}/features/${name}`);
+                navigate(`/projects/${project}/features/${name}`);
                 setToastData({
                     title: 'Toggle created successfully',
                     text: 'Now you can start using your toggle.',
@@ -71,16 +71,17 @@ const CreateFeature = () => {
     };
 
     const handleCancel = () => {
-        history.goBack();
+        navigate(GO_BACK);
     };
 
     return (
         <FormTemplate
             loading={loading}
-            title="Create Feature toggle"
+            title="Create feature toggle"
             description="Feature toggles support different use cases, each with their own specific needs such as simple static routing or more complex routing.
             The feature toggle is disabled when created and you decide when to enable"
             documentationLink="https://docs.getunleash.io/advanced/feature_toggle_types"
+            documentationLinkLabel="Feature toggle types documentation"
             formatApiCode={formatApiCode}
         >
             <FeatureForm
@@ -102,10 +103,10 @@ const CreateFeature = () => {
                 clearErrors={clearErrors}
             >
                 <CreateButton
-                    name="Feature"
+                    name="feature toggle"
                     permission={CREATE_FEATURE}
                     projectId={project}
-                    data-test={CF_CREATE_BTN_ID}
+                    data-testid={CF_CREATE_BTN_ID}
                 />
             </FeatureForm>
         </FormTemplate>

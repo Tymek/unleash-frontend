@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Button, FormControlLabel, Grid, Switch } from '@material-ui/core';
-import { Alert } from '@material-ui/lab';
-import PageContent from 'component/common/PageContent/PageContent';
+import { Button, FormControlLabel, Grid, Switch } from '@mui/material';
+import { Alert } from '@mui/material';
+import { PageContent } from 'component/common/PageContent/PageContent';
 import AccessContext from 'contexts/AccessContext';
 import { ADMIN } from 'component/providers/AccessProvider/permissions';
 import useAuthSettings from 'hooks/api/getters/useAuthSettings/useAuthSettings';
@@ -57,9 +57,9 @@ export const PasswordAuth = () => {
         }
     };
     return (
-        <PageContent headerContent="">
+        <PageContent>
             <form onSubmit={onSubmit}>
-                <Grid container spacing={3}>
+                <Grid container spacing={3} mb={2}>
                     <Grid item md={5}>
                         <strong>Password based login</strong>
                         <p>Allow users to login with username & password</p>

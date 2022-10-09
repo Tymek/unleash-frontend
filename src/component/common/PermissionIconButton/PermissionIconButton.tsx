@@ -1,27 +1,49 @@
-import { IconButton, Tooltip, IconButtonProps } from '@material-ui/core';
-import React, { useContext } from 'react';
+import { IconButton, IconButtonProps } from '@mui/material';
+import React, { useContext, ReactNode } from 'react';
 import AccessContext from 'contexts/AccessContext';
+import { Link } from 'react-router-dom';
+import {
+    TooltipResolver,
+    ITooltipResolverProps,
+} from 'component/common/TooltipResolver/TooltipResolver';
+import { formatAccessText } from 'utils/formatAccessText';
+import { useId } from 'hooks/useId';
 
-interface IPermissionIconButtonProps extends IconButtonProps {
+interface IPermissionIconButtonProps {
     permission: string;
-    Icon?: React.ElementType;
-    onClick?: (e: any) => void;
     projectId?: string;
     environmentId?: string;
     className?: string;
-    title?: string;
+    children?: ReactNode;
+    disabled?: boolean;
+    hidden?: boolean;
+    type?: 'button';
+    edge?: IconButtonProps['edge'];
+    tooltipProps?: Omit<ITooltipResolverProps, 'children'>;
+    sx?: IconButtonProps['sx'];
+    size?: string;
 }
 
-const PermissionIconButton: React.FC<IPermissionIconButtonProps> = ({
+interface IButtonProps extends IPermissionIconButtonProps {
+    onClick: (event: React.SyntheticEvent) => void;
+}
+
+interface ILinkProps extends IPermissionIconButtonProps {
+    component: typeof Link;
+    to: string;
+}
+
+const PermissionIconButton = ({
     permission,
-    Icon,
-    onClick,
     projectId,
     children,
     environmentId,
+    tooltipProps,
+    disabled,
     ...rest
-}) => {
+}: IButtonProps | ILinkProps) => {
     const { hasAccess } = useContext(AccessContext);
+    const id = useId();
     let access;
 
     if (projectId && environmentId) {
@@ -32,18 +54,24 @@ const PermissionIconButton: React.FC<IPermissionIconButtonProps> = ({
         access = hasAccess(permission);
     }
 
-    const tooltipText = !access
-        ? "You don't have access to perform this operation"
-        : '';
-
     return (
-        <Tooltip title={tooltipText} arrow>
-            <span>
-                <IconButton onClick={onClick} disabled={!access} {...rest}>
+        <TooltipResolver
+            {...tooltipProps}
+            title={formatAccessText(access, tooltipProps?.title)}
+            arrow
+            onClick={e => e.preventDefault()}
+        >
+            <div id={id}>
+                <IconButton
+                    {...rest}
+                    disabled={!access || disabled}
+                    aria-labelledby={id}
+                    size="large"
+                >
                     {children}
                 </IconButton>
-            </span>
-        </Tooltip>
+            </div>
+        </TooltipResolver>
     );
 };
 

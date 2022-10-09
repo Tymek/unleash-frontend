@@ -1,23 +1,25 @@
 import { useState } from 'react';
-import PageContent from 'component/common/PageContent';
+import { PageContent } from 'component/common/PageContent/PageContent';
 import { useStyles } from './FeatureSettings.styles';
-import { List, ListItem } from '@material-ui/core';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { List, ListItem } from '@mui/material';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import FeatureSettingsProject from './FeatureSettingsProject/FeatureSettingsProject';
-import { useParams } from 'react-router-dom';
-import { IFeatureViewParams } from 'interfaces/params';
 import { FeatureSettingsInformation } from './FeatureSettingsInformation/FeatureSettingsInformation';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
+import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 
 const METADATA = 'metadata';
 const PROJECT = 'project';
 
 export const FeatureSettings = () => {
-    const styles = useStyles();
-    const { projectId, featureId } = useParams<IFeatureViewParams>();
+    const { classes: styles } = useStyles();
+    const projectId = useRequiredPathParam('projectId');
+    const featureId = useRequiredPathParam('featureId');
     const [settings, setSettings] = useState(METADATA);
+    const { uiConfig } = useUiConfig();
 
     return (
-        <PageContent headerContent="Settings" bodyClass={styles.bodyContainer}>
+        <PageContent header="Settings" bodyClass={styles.bodyContainer}>
             <div className={styles.innerContainer}>
                 <div className={styles.listContainer}>
                     <List>
@@ -36,6 +38,7 @@ export const FeatureSettings = () => {
                             button
                             onClick={() => setSettings(PROJECT)}
                             selected={settings === PROJECT}
+                            hidden={!uiConfig.flags.P}
                         >
                             Project
                         </ListItem>
@@ -52,7 +55,7 @@ export const FeatureSettings = () => {
                         }
                     />
                     <ConditionallyRender
-                        condition={settings === PROJECT}
+                        condition={settings === PROJECT && uiConfig.flags.P}
                         show={<FeatureSettingsProject />}
                     />
                 </div>

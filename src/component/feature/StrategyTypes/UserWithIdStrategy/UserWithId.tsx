@@ -1,31 +1,29 @@
-import { IParameter } from 'interfaces/strategy';
+import { IFeatureStrategyParameters } from 'interfaces/strategy';
 import StrategyInputList from '../StrategyInputList/StrategyInputList';
+import { parseParameterStrings } from 'utils/parseParameter';
+import { IFormErrors } from 'hooks/useFormErrors';
 
 interface IUserWithIdStrategyProps {
-    parameters: IParameter;
+    parameters: IFeatureStrategyParameters;
     updateParameter: (field: string, value: string) => void;
     editable: boolean;
+    errors: IFormErrors;
 }
 
 const UserWithIdStrategy = ({
     editable,
     parameters,
     updateParameter,
+    errors,
 }: IUserWithIdStrategyProps) => {
-    const value = parameters.userIds;
-
-    let list: string[] = [];
-    if (typeof value === 'string') {
-        list = value.trim().split(',').filter(Boolean);
-    }
-
     return (
         <div>
             <StrategyInputList
                 name="userIds"
-                list={list}
+                list={parseParameterStrings(parameters.userIds)}
                 disabled={!editable}
                 setConfig={updateParameter}
+                errors={errors}
             />
         </div>
     );

@@ -1,5 +1,5 @@
 import FormTemplate from 'component/common/FormTemplate/FormTemplate';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import UserForm from '../UserForm/UserForm';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import useAdminUsersApi from 'hooks/api/actions/useAdminUsersApi/useAdminUsersApi';
@@ -11,11 +11,12 @@ import { scrollToTop } from 'component/common/util';
 import { CreateButton } from 'component/common/CreateButton/CreateButton';
 import { ADMIN } from 'component/providers/AccessProvider/permissions';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { GO_BACK } from 'constants/navigate';
 
 const CreateUser = () => {
     const { setToastApiError } = useToast();
     const { uiConfig } = useUiConfig();
-    const history = useHistory();
+    const navigate = useNavigate();
     const {
         name,
         setName,
@@ -59,7 +60,7 @@ const CreateUser = () => {
     };
     const closeConfirm = () => {
         setShowConfirm(false);
-        history.push('/admin/user-admin');
+        navigate('/admin/users');
     };
 
     const formatApiCode = () => {
@@ -72,7 +73,7 @@ const CreateUser = () => {
     };
 
     const handleCancel = () => {
-        history.goBack();
+        navigate(GO_BACK);
     };
 
     return (
@@ -81,7 +82,8 @@ const CreateUser = () => {
             title="Create Unleash user"
             description="In order to get access to Unleash needs to have an Unleash root role as Admin, Editor or Viewer.
             You can also add the user to projects as member or owner in the specific projects."
-            documentationLink="https://docs.getunleash.io/user_guide/user-management"
+            documentationLink="https://docs.getunleash.io/user_guide/rbac#standard-roles"
+            documentationLinkLabel="User management documentation"
             formatApiCode={formatApiCode}
         >
             <UserForm

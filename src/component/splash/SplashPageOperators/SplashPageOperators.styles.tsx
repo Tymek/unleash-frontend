@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
         backgroundColor: theme.palette.primary.light,
         minHeight: '100vh',
@@ -72,7 +72,7 @@ export const useStyles = makeStyles(theme => ({
         color: 'inherit',
     },
     button: {
-        background: 'white',
+        background: 'white !important',
         color: theme.palette.primary.main,
     },
 }));

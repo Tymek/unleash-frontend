@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     error: {
         color: theme.palette.error.main,
         fontSize: theme.fontSizes.smallBody,
@@ -16,7 +16,12 @@ export const useStyles = makeStyles(theme => ({
     weightInput: {
         marginRight: '0.8rem',
     },
-    label: { marginBottom: '1rem' },
+    label: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1ch',
+        marginBottom: '1rem',
+    },
     info: {
         width: '18.5px',
         height: '18.5px',

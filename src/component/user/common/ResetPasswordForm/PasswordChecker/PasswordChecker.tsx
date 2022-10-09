@@ -1,13 +1,13 @@
-import { Tooltip, Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 import classnames from 'classnames';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { BAD_REQUEST, OK } from 'constants/statusCodes';
 import { useStyles } from './PasswordChecker.styles';
-import HelpIcon from '@material-ui/icons/Help';
 import { useCallback } from 'react';
 import { formatApiPath } from 'utils/formatPath';
-import { Alert } from '@material-ui/lab';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { Alert } from '@mui/material';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
+import { HelpIcon } from 'component/common/HelpIcon/HelpIcon';
 
 interface IPasswordCheckerProps {
     password: string;
@@ -35,13 +35,15 @@ const LOWERCASE_ERROR =
     'The password must contain at least one lowercase letter.';
 const REPEATING_CHARACTER_ERROR =
     'The password may not contain sequences of three or more repeated characters.';
+export const PASSWORD_FORMAT_MESSAGE =
+    'The password must be at least 10 characters long and must include an uppercase letter, a lowercase letter, a number, and a symbol.';
 
 const PasswordChecker = ({
     password,
     callback,
     style = {},
 }: IPasswordCheckerProps) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const [casingError, setCasingError] = useState(true);
     const [numberError, setNumberError] = useState(true);
     const [symbolError, setSymbolError] = useState(true);
@@ -157,19 +159,10 @@ const PasswordChecker = ({
 
     return (
         <>
-            <Tooltip
-                arrow
-                title="Your password needs to be at least ten characters long, and include an uppercase letter, a lowercase letter, a number and a symbol to be a valid OWASP password"
-            >
-                <Typography
-                    variant="body2"
-                    className={styles.title}
-                    data-loading
-                >
-                    Please set a strong password
-                    <HelpIcon className={styles.helpIcon} />
-                </Typography>
-            </Tooltip>
+            <Typography variant="body2" className={styles.title} data-loading>
+                Please set a strong password
+                <HelpIcon tooltip={PASSWORD_FORMAT_MESSAGE} />
+            </Typography>
             <div
                 className={styles.container}
                 style={{

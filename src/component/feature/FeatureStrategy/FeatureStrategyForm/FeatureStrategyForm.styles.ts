@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     form: {
         display: 'grid',
         gap: '1rem',
@@ -16,7 +16,7 @@ export const useStyles = makeStyles(theme => ({
         display: 'grid',
         gridTemplateColumns: 'auto 1fr',
         gridGap: '.5rem',
-        fontSize: theme.fontSizes.subHeader,
+        fontSize: theme.fontSizes.bodySize,
     },
     icon: {
         color: theme.palette.primary.main,

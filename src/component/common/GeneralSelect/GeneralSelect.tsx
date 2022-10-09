@@ -1,7 +1,14 @@
 import React from 'react';
-import { FormControl, InputLabel, MenuItem, Select } from '@material-ui/core';
+import {
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    SelectProps,
+    SelectChangeEvent,
+} from '@mui/material';
 import { SELECT_ITEM_ID } from 'utils/testIds';
-import { KeyboardArrowDownOutlined } from '@material-ui/icons';
+import { KeyboardArrowDownOutlined } from '@mui/icons-material';
 
 export interface ISelectOption {
     key: string;
@@ -10,37 +17,26 @@ export interface ISelectOption {
     disabled?: boolean;
 }
 
-export interface ISelectMenuProps {
-    name: string;
-    id: string;
+export interface IGeneralSelectProps extends Omit<SelectProps, 'onChange'> {
+    name?: string;
     value?: string;
     label?: string;
-    autoFocus?: boolean;
     options: ISelectOption[];
-    style?: object;
-    onChange?: OnGeneralSelectChange;
+    onChange: (key: string) => void;
     disabled?: boolean;
     fullWidth?: boolean;
-    className?: string;
     classes?: any;
     defaultValue?: string;
 }
 
-export type OnGeneralSelectChange = (
-    event: React.ChangeEvent<{ name?: string; value: unknown }>,
-    child: React.ReactNode
-) => void;
-
-const GeneralSelect: React.FC<ISelectMenuProps> = ({
+const GeneralSelect: React.FC<IGeneralSelectProps> = ({
     name,
     value = '',
     label = '',
     options,
     onChange,
-    defaultValue,
     id,
     disabled = false,
-    autoFocus,
     className,
     classes,
     fullWidth,
@@ -52,12 +48,17 @@ const GeneralSelect: React.FC<ISelectMenuProps> = ({
                 key={option.key}
                 value={option.key}
                 title={option.title || ''}
-                data-test={`${SELECT_ITEM_ID}-${option.label}`}
+                data-testid={`${SELECT_ITEM_ID}-${option.label}`}
                 disabled={option.disabled}
             >
                 {option.label}
             </MenuItem>
         ));
+
+    const onSelectChange = (event: SelectChangeEvent) => {
+        event.preventDefault();
+        onChange(String(event.target.value));
+    };
 
     return (
         <FormControl
@@ -68,13 +69,11 @@ const GeneralSelect: React.FC<ISelectMenuProps> = ({
         >
             <InputLabel htmlFor={id}>{label}</InputLabel>
             <Select
-                defaultValue={defaultValue}
                 name={name}
                 disabled={disabled}
-                onChange={onChange}
+                onChange={onSelectChange}
                 className={className}
                 label={label}
-                autoFocus={autoFocus}
                 id={id}
                 value={value}
                 IconComponent={KeyboardArrowDownOutlined}

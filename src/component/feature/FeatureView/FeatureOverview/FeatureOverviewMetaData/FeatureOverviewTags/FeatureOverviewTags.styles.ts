@@ -1,16 +1,14 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
-        borderRadius: '10px',
-        backgroundColor: theme.palette.primary.light,
+        borderRadius: theme.shape.borderRadiusLarge,
+        backgroundColor: theme.palette.primary.main,
         display: 'flex',
         flexDirection: 'column',
         marginRight: '1rem',
         marginTop: '1rem',
-    },
-    [theme.breakpoints.down(800)]: {
-        container: {
+        [theme.breakpoints.down(800)]: {
             width: '100%',
             maxWidth: 'none',
         },

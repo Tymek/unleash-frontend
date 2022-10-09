@@ -1,8 +1,6 @@
-import { DialogContentText } from '@material-ui/core';
-import { useParams } from 'react-router';
+import { Typography } from '@mui/material';
 import React, { useState } from 'react';
-import { IFeatureViewParams } from 'interfaces/params';
-import Dialogue from 'component/common/Dialogue';
+import { Dialogue } from 'component/common/Dialogue/Dialogue';
 import Input from 'component/common/Input/Input';
 import { useStyles } from './AddTagDialog.styles';
 import { trim } from 'component/common/util';
@@ -11,6 +9,7 @@ import useFeatureApi from 'hooks/api/actions/useFeatureApi/useFeatureApi';
 import useTags from 'hooks/api/getters/useTags/useTags';
 import useToast from 'hooks/useToast';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
 
 interface IAddTagDialogProps {
     open: boolean;
@@ -26,12 +25,12 @@ interface IDefaultTag {
 
 const AddTagDialog = ({ open, setOpen }: IAddTagDialogProps) => {
     const DEFAULT_TAG: IDefaultTag = { type: 'simple', value: '' };
-    const styles = useStyles();
-    const { featureId } = useParams<IFeatureViewParams>();
+    const { classes: styles } = useStyles();
+    const featureId = useRequiredPathParam('featureId');
     const { addTagToFeature, loading } = useFeatureApi();
     const { refetch } = useTags(featureId);
     const [errors, setErrors] = useState({ tagError: '' });
-    const { setToastData, setToastApiError } = useToast();
+    const { setToastData } = useToast();
     const [tag, setTag] = useState(DEFAULT_TAG);
 
     const onCancel = () => {
@@ -65,7 +64,6 @@ const AddTagDialog = ({ open, setOpen }: IAddTagDialogProps) => {
             });
         } catch (error: unknown) {
             const message = formatUnknownError(error);
-            setToastApiError(message);
             setErrors({ tagError: message });
         }
     };
@@ -85,16 +83,16 @@ const AddTagDialog = ({ open, setOpen }: IAddTagDialogProps) => {
                 formId={formId}
             >
                 <>
-                    <DialogContentText>
+                    <Typography paragraph>
                         Tags allow you to group features together
-                    </DialogContentText>
+                    </Typography>
                     <form id={formId} onSubmit={onSubmit}>
                         <section className={styles.dialogFormContent}>
                             <TagSelect
                                 autoFocus
                                 name="type"
                                 value={tag.type}
-                                onChange={e => setValue('type', e.target.value)}
+                                onChange={type => setValue('type', type)}
                             />
                             <br />
                             <Input

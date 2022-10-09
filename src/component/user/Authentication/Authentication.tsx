@@ -1,5 +1,5 @@
 import SimpleAuth from '../SimpleAuth/SimpleAuth';
-import AuthenticationCustomComponent from 'component/user/AuthenticationCustomComponent';
+import { AuthenticationCustomComponent } from 'component/user/AuthenticationCustomComponent';
 import PasswordAuth from '../PasswordAuth/PasswordAuth';
 import HostedAuth from '../HostedAuth/HostedAuth';
 import DemoAuth from '../DemoAuth/DemoAuth';
@@ -11,19 +11,23 @@ import {
 } from 'constants/authTypes';
 import SecondaryLoginActions from '../common/SecondaryLoginActions/SecondaryLoginActions';
 import useQueryParams from 'hooks/useQueryParams';
-import ConditionallyRender from 'component/common/ConditionallyRender';
-import { Alert } from '@material-ui/lab';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
+import { Alert } from '@mui/material';
 import { useAuthDetails } from 'hooks/api/getters/useAuth/useAuthDetails';
+import { AUTH_PAGE_ID } from 'utils/testIds';
 
 interface IAuthenticationProps {
     redirect: string;
 }
+
 const Authentication = ({ redirect }: IAuthenticationProps) => {
     const { authDetails } = useAuthDetails();
     const params = useQueryParams();
-
     const error = params.get('errorMsg');
-    if (!authDetails) return null;
+
+    if (!authDetails) {
+        return null;
+    }
 
     let content;
     if (authDetails.type === PASSWORD_TYPE) {
@@ -53,9 +57,10 @@ const Authentication = ({ redirect }: IAuthenticationProps) => {
     } else {
         content = <AuthenticationCustomComponent authDetails={authDetails} />;
     }
+
     return (
         <>
-            <div style={{ maxWidth: '350px' }}>
+            <div style={{ maxWidth: '350px' }} data-testid={AUTH_PAGE_ID}>
                 <ConditionallyRender
                     condition={Boolean(error)}
                     show={<Alert severity="error">{error}</Alert>}

@@ -1,50 +1,47 @@
-import { Checkbox, FormControlLabel, IconButton } from '@material-ui/core';
-import { Delete } from '@material-ui/icons';
+import {
+    Checkbox,
+    Divider,
+    FormControlLabel,
+    IconButton,
+    Tooltip,
+} from '@mui/material';
+import { Delete } from '@mui/icons-material';
 import { useStyles } from './StrategyParameter.styles';
 import GeneralSelect from 'component/common/GeneralSelect/GeneralSelect';
 import Input from 'component/common/Input/Input';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import React from 'react';
-import { ICustomStrategyParameter } from 'interfaces/strategy';
+import { IStrategyParameter } from 'interfaces/strategy';
 
 const paramTypesOptions = [
     {
         key: 'string',
         label: 'string',
-        description: 'A string is a collection of characters',
     },
     {
         key: 'percentage',
         label: 'percentage',
-        description:
-            'Percentage is used when you want to make your feature visible to a process part of your customers',
     },
     {
         key: 'list',
         label: 'list',
-        description:
-            'A list is used when you want to define several parameters that must be met before your feature becomes visible to your customers',
     },
     {
         key: 'number',
         label: 'number',
-        description:
-            'Number is used when you have one or more digits that must be met for your feature to be visible to your customers',
     },
     {
         key: 'boolean',
         label: 'boolean',
-        description:
-            'A boolean value represents a truth value, which is either true or false',
     },
 ];
 
 interface IStrategyParameterProps {
     set: React.Dispatch<React.SetStateAction<object>>;
-    input: ICustomStrategyParameter;
+    input: IStrategyParameter;
     index: number;
-    params: ICustomStrategyParameter[];
-    setParams: React.Dispatch<React.SetStateAction<ICustomStrategyParameter[]>>;
+    params: IStrategyParameter[];
+    setParams: React.Dispatch<React.SetStateAction<IStrategyParameter[]>>;
     errors: { [key: string]: string };
 }
 
@@ -56,26 +53,29 @@ export const StrategyParameter = ({
     setParams,
     errors,
 }: IStrategyParameterProps) => {
-    const styles = useStyles();
-    const handleTypeChange = (
-        event: React.ChangeEvent<{ name?: string; value: unknown }>
-    ) => {
-        set({ type: event.target.value });
-    };
+    const { classes: styles } = useStyles();
 
-    const renderParamTypeDescription = () => {
-        return paramTypesOptions.find(param => param.key === input.type)
-            ?.description;
+    const onTypeChange = (type: string) => {
+        set({ type });
     };
 
     return (
         <div className={styles.paramsContainer}>
-            <hr className={styles.divider} />
+            <Divider className={styles.divider} />
             <ConditionallyRender
                 condition={index === 0}
                 show={
                     <p className={styles.input}>
-                        The parameters define how the strategy will look like.
+                        Parameters let you provide arguments to your strategy
+                        that it can access for evaluation. Read more in the{' '}
+                        <a
+                            href="https://docs.getunleash.io/advanced/custom_activation_strategy#parameter-types"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            parameter types documentation
+                        </a>
+                        .
                     </p>
                 }
             />
@@ -89,26 +89,26 @@ export const StrategyParameter = ({
                     error={Boolean(errors?.[`paramName${index}`])}
                     errorText={errors?.[`paramName${index}`]}
                 />
-                <IconButton
-                    onClick={() => {
-                        setParams(params.filter((e, i) => i !== index));
-                    }}
-                >
-                    <Delete titleAccess="Delete" />
-                </IconButton>
+                <Tooltip title="Remove parameter" arrow>
+                    <IconButton
+                        onClick={() => {
+                            setParams(params.filter((e, i) => i !== index));
+                        }}
+                        size="large"
+                    >
+                        <Delete />
+                    </IconButton>
+                </Tooltip>
             </div>
             <GeneralSelect
                 label="Type*"
                 name="type"
                 options={paramTypesOptions}
                 value={input.type}
-                onChange={handleTypeChange}
+                onChange={onTypeChange}
                 id={`prop-type-${index}-select`}
                 className={styles.input}
             />
-            <p className={styles.typeDescription}>
-                {renderParamTypeDescription()}
-            </p>
             <Input
                 rows={2}
                 multiline

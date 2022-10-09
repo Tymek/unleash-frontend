@@ -1,4 +1,4 @@
-import { useHistory, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import UserForm from '../UserForm/UserForm';
 import useAddUserForm from '../hooks/useAddUserForm';
 import { scrollToTop } from 'component/common/util';
@@ -12,6 +12,8 @@ import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import useUserInfo from 'hooks/api/getters/useUserInfo/useUserInfo';
 import useToast from 'hooks/useToast';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
+import { GO_BACK } from 'constants/navigate';
 
 const EditUser = () => {
     useEffect(() => {
@@ -19,10 +21,10 @@ const EditUser = () => {
     }, []);
     const { uiConfig } = useUiConfig();
     const { setToastData, setToastApiError } = useToast();
-    const { id } = useParams<{ id: string }>();
+    const id = useRequiredPathParam('id');
     const { user, refetch } = useUserInfo(id);
     const { updateUser, userLoading: loading } = useAdminUsersApi();
-    const history = useHistory();
+    const navigate = useNavigate();
     const {
         name,
         setName,
@@ -56,7 +58,7 @@ const EditUser = () => {
             try {
                 await updateUser({ ...payload, id });
                 refetch();
-                history.push('/admin/users');
+                navigate('/admin/users');
                 setToastData({
                     title: 'User information updated',
                     type: 'success',
@@ -68,7 +70,7 @@ const EditUser = () => {
     };
 
     const handleCancel = () => {
-        history.goBack();
+        navigate(GO_BACK);
     };
 
     return (
@@ -77,7 +79,8 @@ const EditUser = () => {
             title="Edit user"
             description="In order to get access to Unleash needs to have an Unleash root role as Admin, Editor or Viewer.
             You can also add the user to projects as member or owner in the specific projects."
-            documentationLink="https://docs.getunleash.io/user_guide/user-management"
+            documentationLink="https://docs.getunleash.io/user_guide/rbac#standard-roles"
+            documentationLinkLabel="User management documentation"
             formatApiCode={formatApiCode}
         >
             <UserForm

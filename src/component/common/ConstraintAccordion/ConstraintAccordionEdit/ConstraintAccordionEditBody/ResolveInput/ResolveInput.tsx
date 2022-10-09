@@ -1,6 +1,5 @@
 import { IUnleashContextDefinition } from 'interfaces/context';
 import { IConstraint } from 'interfaces/strategy';
-import { CaseInsensitive } from '../CaseInsensitive/CaseInsensitive';
 import { DateSingleValue } from '../DateSingleValue/DateSingleValue';
 import { FreeTextInput } from '../FreeTextInput/FreeTextInput';
 import { RestrictiveLegalValues } from '../RestrictiveLegalValues/RestrictiveLegalValues';
@@ -18,13 +17,13 @@ import {
     IN_OPERATORS_FREETEXT,
     Input,
 } from '../useConstraintInput/useConstraintInput';
+import React from 'react';
 
 interface IResolveInputProps {
     contextDefinition: IUnleashContextDefinition;
     localConstraint: IConstraint;
     setValue: (value: string) => void;
     setValues: (values: string[]) => void;
-    setCaseInsensitive: () => void;
     setError: React.Dispatch<React.SetStateAction<string>>;
     removeValue: (index: number) => void;
     input: Input;
@@ -37,7 +36,6 @@ export const ResolveInput = ({
     localConstraint,
     setValue,
     setValues,
-    setCaseInsensitive,
     setError,
     removeValue,
     error,
@@ -57,12 +55,6 @@ export const ResolveInput = ({
             case STRING_OPERATORS_LEGAL_VALUES:
                 return (
                     <>
-                        <CaseInsensitive
-                            setCaseInsensitive={setCaseInsensitive}
-                            caseInsensitive={Boolean(
-                                localConstraint.caseInsensitive
-                            )}
-                        />
                         <RestrictiveLegalValues
                             legalValues={contextDefinition.legalValues || []}
                             values={localConstraint.values || []}
@@ -81,7 +73,7 @@ export const ResolveInput = ({
                             type="number"
                             legalValues={
                                 contextDefinition.legalValues?.filter(
-                                    (value: string) => Number(value)
+                                    legalValue => Number(legalValue.value)
                                 ) || []
                             }
                             error={error}
@@ -124,13 +116,6 @@ export const ResolveInput = ({
             case STRING_OPERATORS_FREETEXT:
                 return (
                     <>
-                        {' '}
-                        <CaseInsensitive
-                            setCaseInsensitive={setCaseInsensitive}
-                            caseInsensitive={Boolean(
-                                localConstraint.caseInsensitive
-                            )}
-                        />
                         <FreeTextInput
                             values={localConstraint.values || []}
                             removeValue={removeValue}

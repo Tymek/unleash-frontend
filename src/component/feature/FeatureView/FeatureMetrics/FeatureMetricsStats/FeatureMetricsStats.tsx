@@ -1,25 +1,36 @@
 import { calculatePercentage } from 'utils/calculatePercentage';
 import { useStyles } from './FeatureMetricsStats.styles';
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 
-interface IFeatureMetricsStatsProps {
+export interface IFeatureMetricsStatsProps {
     totalYes: number;
     totalNo: number;
     hoursBack: number;
+    statsSectionId?: string;
+    tableSectionId?: string;
 }
 
 export const FeatureMetricsStats = ({
     totalYes,
     totalNo,
     hoursBack,
+    statsSectionId,
+    tableSectionId,
 }: IFeatureMetricsStatsProps) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
 
     const hoursSuffix =
         hoursBack === 1 ? 'in the last hour' : `in the last ${hoursBack} hours`;
 
     return (
-        <Grid container spacing={2}>
+        <Grid
+            container
+            spacing={2}
+            id={statsSectionId}
+            aria-describedby={tableSectionId}
+            aria-label="Feature metrics summary"
+            component="section"
+        >
             <Grid item xs={12} sm={4}>
                 <article className={styles.item}>
                     <h3 className={styles.title}>Exposure</h3>

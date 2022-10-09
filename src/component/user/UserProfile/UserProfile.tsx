@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import classnames from 'classnames';
-import { Avatar, Button, ClickAwayListener } from '@material-ui/core';
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import { Avatar, Button, ClickAwayListener } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useStyles } from 'component/user/UserProfile/UserProfile.styles';
-import { useCommonStyles } from 'themes/commonStyles';
+import { useThemeStyles } from 'themes/themeStyles';
 import UserProfileContent from './UserProfileContent/UserProfileContent';
 import { IUser } from 'interfaces/user';
 import { ILocationSettings } from 'hooks/useLocationSettings';
 import { HEADER_USER_AVATAR } from 'utils/testIds';
+import unknownUser from 'assets/icons/unknownUser.png';
+import { useId } from 'hooks/useId';
 
 interface IUserProfileProps {
     profile: IUser;
@@ -24,9 +26,10 @@ const UserProfile = ({
 }: IUserProfileProps) => {
     const [showProfile, setShowProfile] = useState(false);
     const [currentLocale, setCurrentLocale] = useState<string>();
+    const modalId = useId();
 
-    const styles = useStyles();
-    const commonStyles = useCommonStyles();
+    const { classes: styles } = useStyles();
+    const { classes: themeStyles } = useThemeStyles();
 
     const [possibleLocales, setPossibleLocales] = useState([
         'en-US',
@@ -53,29 +56,34 @@ const UserProfile = ({
     }, [locationSettings]);
 
     const email = profile ? profile.email : '';
-    const imageUrl = email ? profile.imageUrl : 'unknown-user.png';
+    const imageUrl = email ? profile.imageUrl : unknownUser;
 
     return (
         <ClickAwayListener onClickAway={() => setShowProfile(false)}>
             <div className={styles.profileContainer}>
                 <Button
                     className={classnames(
-                        commonStyles.flexRow,
-                        commonStyles.itemsCenter,
+                        themeStyles.flexRow,
+                        themeStyles.itemsCenter,
+                        themeStyles.focusable,
                         styles.button
                     )}
                     onClick={() => setShowProfile(prev => !prev)}
-                    role="button"
+                    aria-controls={showProfile ? modalId : undefined}
+                    aria-expanded={showProfile}
+                    color="secondary"
                     disableRipple
                 >
                     <Avatar
-                        alt="user image"
+                        style={{ backgroundColor: '#fff' }}
+                        alt="Your Gravatar"
                         src={imageUrl}
-                        data-test={HEADER_USER_AVATAR}
+                        data-testid={HEADER_USER_AVATAR}
                     />
-                    <KeyboardArrowDownIcon />
+                    <KeyboardArrowDownIcon className={styles.icon} />
                 </Button>
                 <UserProfileContent
+                    id={modalId}
                     showProfile={showProfile}
                     imageUrl={imageUrl}
                     profile={profile}

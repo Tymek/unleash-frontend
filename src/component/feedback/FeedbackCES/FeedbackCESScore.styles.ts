@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     scoreInput: {
         display: 'flex',
         gap: '1rem',
@@ -8,13 +8,13 @@ export const useStyles = makeStyles(theme => ({
         margin: '0 auto',
     },
     scoreHelp: {
-        width: '8rem',
+        width: '6.25rem',
         whiteSpace: 'nowrap',
-        color: theme.palette.grey[600],
-        '&:first-child': {
+        color: theme.palette.text.secondary,
+        '&:first-of-type': {
             textAlign: 'right',
         },
-        [theme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('sm')]: {
             display: 'none',
         },
     },

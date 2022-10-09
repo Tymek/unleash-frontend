@@ -8,22 +8,23 @@ import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
 import useToast from 'hooks/useToast';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { formatUnknownError } from 'utils/formatUnknownError';
 import { useSegmentForm } from '../hooks/useSegmentForm';
 import { SegmentForm } from '../SegmentForm/SegmentForm';
-import {
-    segmentsFormDocsLink,
-    segmentsFormDescription,
-} from 'component/segments/CreateSegment/CreateSegment';
+import { segmentsFormDescription } from 'component/segments/CreateSegment/CreateSegment';
 import { UpdateButton } from 'component/common/UpdateButton/UpdateButton';
+import { segmentsDocsLink } from 'component/segments/SegmentDocs/SegmentDocs';
+import { useSegmentValuesCount } from 'component/segments/hooks/useSegmentValuesCount';
+import { SEGMENT_SAVE_BTN_ID } from 'utils/testIds';
+import { useSegmentLimits } from 'hooks/api/getters/useSegmentLimits/useSegmentLimits';
 
 export const EditSegment = () => {
     const segmentId = useRequiredPathParam('segmentId');
     const { segment } = useSegment(Number(segmentId));
     const { uiConfig } = useUiConfig();
     const { setToastData, setToastApiError } = useToast();
-    const history = useHistory();
+    const navigate = useNavigate();
     const { updateSegment, loading } = useSegmentsApi();
     const { refetchSegments } = useSegments();
 
@@ -44,6 +45,12 @@ export const EditSegment = () => {
     );
 
     const hasValidConstraints = useConstraintsValidation(constraints);
+    const segmentValuesCount = useSegmentValuesCount(constraints);
+    const { segmentValuesLimit } = useSegmentLimits();
+
+    const overSegmentValuesLimit: boolean = Boolean(
+        segmentValuesLimit && segmentValuesCount > segmentValuesLimit
+    );
 
     const formatApiCode = () => {
         return `curl --location --request PUT '${
@@ -61,7 +68,7 @@ export const EditSegment = () => {
             try {
                 await updateSegment(segment.id, getSegmentPayload());
                 await refetchSegments();
-                history.push('/segments/');
+                navigate('/segments/');
                 setToastData({
                     title: 'Segment updated',
                     type: 'success',
@@ -77,8 +84,8 @@ export const EditSegment = () => {
             loading={loading}
             title="Edit segment"
             description={segmentsFormDescription}
-            documentationLink={segmentsFormDocsLink}
-            documentationLinkLabel="More about segments"
+            documentationLink={segmentsDocsLink}
+            documentationLinkLabel="Segments documentation"
             formatApiCode={formatApiCode}
         >
             <SegmentForm
@@ -89,13 +96,14 @@ export const EditSegment = () => {
                 setDescription={setDescription}
                 constraints={constraints}
                 setConstraints={setConstraints}
-                mode="Edit"
                 errors={errors}
                 clearErrors={clearErrors}
+                mode="edit"
             >
                 <UpdateButton
                     permission={UPDATE_SEGMENT}
-                    disabled={!hasValidConstraints}
+                    disabled={!hasValidConstraints || overSegmentValuesLimit}
+                    data-testid={SEGMENT_SAVE_BTN_ID}
                 />
             </SegmentForm>
         </FormTemplate>

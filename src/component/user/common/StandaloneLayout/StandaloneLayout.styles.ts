@@ -1,22 +1,22 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
         padding: '5.5rem',
-        background: '#EFF2F2',
+        background: theme.palette.standaloneBackground,
         display: 'flex',
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
             flexDirection: 'column',
         },
-        [theme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('sm')]: {
             padding: '0',
         },
         minHeight: '100vh',
     },
     leftContainer: {
         width: '40%',
-        borderRadius: '3px',
-        [theme.breakpoints.down('sm')]: {
+        borderRadius: theme.shape.borderRadius,
+        [theme.breakpoints.down('md')]: {
             borderRadius: '0',
             width: '100%',
             minHeight: 'auto',
@@ -27,9 +27,9 @@ export const useStyles = makeStyles(theme => ({
         flex: '1',
         borderTopRightRadius: '3px',
         borderBottomRightRadius: '3px',
-        backgroundColor: '#fff',
+        backgroundColor: theme.palette.background.paper,
         position: 'relative',
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
             borderRadius: '0',
             width: '100%',
             position: 'static',
@@ -46,10 +46,10 @@ export const useStyles = makeStyles(theme => ({
         justifyContent: 'center',
         height: '100%',
         padding: '6rem 3rem',
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
             padding: '2rem 2rem',
         },
-        [theme.breakpoints.down('xs')]: {
+        [theme.breakpoints.down('sm')]: {
             padding: '2rem 1rem',
         },
     },

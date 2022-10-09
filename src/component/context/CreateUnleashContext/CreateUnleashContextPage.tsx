@@ -1,12 +1,14 @@
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { CreateUnleashContext } from 'component/context/CreateUnleashContext/CreateUnleashContext';
+import { GO_BACK } from 'constants/navigate';
 
 export const CreateUnleashContextPage = () => {
-    const { push, goBack } = useHistory();
+    const navigate = useNavigate();
+
     return (
         <CreateUnleashContext
-            onSubmit={() => push('/context')}
-            onCancel={() => goBack()}
+            onSubmit={() => navigate('/context')}
+            onCancel={() => navigate(GO_BACK)}
         />
     );
 };

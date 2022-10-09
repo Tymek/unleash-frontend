@@ -1,15 +1,17 @@
-import { IFeatureTogglePayload } from 'interfaces/featureToggle';
 import { ITag } from 'interfaces/tags';
 import useAPI from '../useApi/useApi';
 import { Operation } from 'fast-json-patch';
+import { CreateFeatureSchema } from 'openapi';
+import { openApiAdmin } from 'utils/openapiClient';
 import { IConstraint } from 'interfaces/strategy';
+import { useCallback } from 'react';
 
 const useFeatureApi = () => {
     const { makeRequest, createRequest, errors, loading } = useAPI({
         propagateErrors: true,
     });
 
-    const validateFeatureToggleName = async (name: string) => {
+    const validateFeatureToggleName = async (name: string | undefined) => {
         const path = `api/admin/features/validate`;
         const req = createRequest(path, {
             method: 'POST',
@@ -38,64 +40,53 @@ const useFeatureApi = () => {
 
     const createFeatureToggle = async (
         projectId: string,
-        featureToggle: IFeatureTogglePayload
+        createFeatureSchema: CreateFeatureSchema
     ) => {
-        const path = `api/admin/projects/${projectId}/features`;
-        const req = createRequest(path, {
-            method: 'POST',
-            body: JSON.stringify(featureToggle),
+        return openApiAdmin.createFeature({
+            projectId,
+            createFeatureSchema,
         });
-
-        try {
-            const res = await makeRequest(req.caller, req.id);
-
-            return res;
-        } catch (e) {
-            throw e;
-        }
     };
 
-    const toggleFeatureEnvironmentOn = async (
-        projectId: string,
-        featureId: string,
-        environmentId: string
-    ) => {
-        const path = `api/admin/projects/${projectId}/features/${featureId}/environments/${environmentId}/on`;
-        const req = createRequest(
-            path,
-            { method: 'POST' },
-            'toggleFeatureEnvironmentOn'
-        );
+    const toggleFeatureEnvironmentOn = useCallback(
+        async (projectId: string, featureId: string, environmentId: string) => {
+            const path = `api/admin/projects/${projectId}/features/${featureId}/environments/${environmentId}/on`;
+            const req = createRequest(
+                path,
+                { method: 'POST' },
+                'toggleFeatureEnvironmentOn'
+            );
 
-        try {
-            const res = await makeRequest(req.caller, req.id);
+            try {
+                const res = await makeRequest(req.caller, req.id);
 
-            return res;
-        } catch (e) {
-            throw e;
-        }
-    };
+                return res;
+            } catch (e) {
+                throw e;
+            }
+        },
+        [createRequest, makeRequest]
+    );
 
-    const toggleFeatureEnvironmentOff = async (
-        projectId: string,
-        featureId: string,
-        environmentId: string
-    ) => {
-        const path = `api/admin/projects/${projectId}/features/${featureId}/environments/${environmentId}/off`;
-        const req = createRequest(
-            path,
-            { method: 'POST' },
-            'toggleFeatureEnvironmentOff'
-        );
+    const toggleFeatureEnvironmentOff = useCallback(
+        async (projectId: string, featureId: string, environmentId: string) => {
+            const path = `api/admin/projects/${projectId}/features/${featureId}/environments/${environmentId}/off`;
+            const req = createRequest(
+                path,
+                { method: 'POST' },
+                'toggleFeatureEnvironmentOff'
+            );
 
-        try {
-            const res = await makeRequest(req.caller, req.id);
+            try {
+                const res = await makeRequest(req.caller, req.id);
 
-            return res;
-        } catch (e) {
-            throw e;
-        }
-    };
+                return res;
+            } catch (e) {
+                throw e;
+            }
+        },
+        [createRequest, makeRequest]
+    );
 
     const changeFeatureProject = async (
         projectId: string,

@@ -1,24 +1,12 @@
-import { useParams } from 'react-router-dom';
 import useAddons from 'hooks/api/getters/useAddons/useAddons';
 import { AddonForm } from '../AddonForm/AddonForm';
 import cloneDeep from 'lodash.clonedeep';
 import { IAddon } from 'interfaces/addons';
-
-interface IAddonEditParams {
-    addonId: string;
-}
-
-const DEFAULT_DATA = {
-    provider: '',
-    description: '',
-    enabled: true,
-    parameters: {},
-    events: [],
-};
+import { DEFAULT_DATA } from '../CreateAddon/CreateAddon';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
 
 export const EditAddon = () => {
-    const { addonId } = useParams<IAddonEditParams>();
-
+    const addonId = useRequiredPathParam('addonId');
     const { providers, addons, refetchAddons } = useAddons();
 
     const editMode = true;
@@ -26,12 +14,10 @@ export const EditAddon = () => {
         (addon: IAddon) => addon.id === Number(addonId)
     ) || { ...cloneDeep(DEFAULT_DATA) };
     const provider = addon
-        ? // @ts-expect-error
-          providers.find(provider => provider.name === addon.provider)
+        ? providers.find(provider => provider.name === addon.provider)
         : undefined;
 
     return (
-        // @ts-expect-error
         <AddonForm
             editMode={editMode}
             provider={provider}

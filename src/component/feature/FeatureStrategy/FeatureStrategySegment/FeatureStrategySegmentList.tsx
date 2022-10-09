@@ -1,9 +1,9 @@
 import React, { Fragment, useState } from 'react';
 import { ISegment } from 'interfaces/segment';
 import { useStyles } from 'component/feature/FeatureStrategy/FeatureStrategySegment/FeatureStrategySegmentList.styles';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { FeatureStrategySegmentChip } from 'component/feature/FeatureStrategy/FeatureStrategySegment/FeatureStrategySegmentChip';
-import { ConstraintAccordionList } from 'component/common/ConstraintAccordion/ConstraintAccordionList/ConstraintAccordionList';
+import { SegmentItem } from 'component/common/SegmentItem/SegmentItem';
 
 interface IFeatureStrategySegmentListProps {
     segments: ISegment[];
@@ -14,7 +14,7 @@ export const FeatureStrategySegmentList = ({
     segments,
     setSegments,
 }: IFeatureStrategySegmentListProps) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const [preview, setPreview] = useState<ISegment>();
     const lastSegmentIndex = segments.length - 1;
 
@@ -24,6 +24,14 @@ export const FeatureStrategySegmentList = ({
 
     return (
         <>
+            <ConditionallyRender
+                condition={segments && segments.length > 0}
+                show={
+                    <p className={styles.selectedSegmentsLabel}>
+                        Selected Segments
+                    </p>
+                }
+            />
             <div className={styles.list}>
                 {segments.map((segment, i) => (
                     <Fragment key={segment.id}>
@@ -41,16 +49,8 @@ export const FeatureStrategySegmentList = ({
                 ))}
             </div>
             <ConditionallyRender
-                condition={Boolean(preview && preview.constraints.length === 0)}
-                show={() => <p>This segment has no constraints.</p>}
-            />
-            <ConditionallyRender
                 condition={Boolean(preview)}
-                show={() => (
-                    <ConstraintAccordionList
-                        constraints={preview!.constraints}
-                    />
-                )}
+                show={() => <SegmentItem segment={preview!} isExpanded />}
             />
         </>
     );

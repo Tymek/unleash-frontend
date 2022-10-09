@@ -1,7 +1,12 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
-    container: {},
+export const useStyles = makeStyles()(theme => ({
+    warning: {
+        marginBottom: '1.5rem',
+    },
+    error: {
+        marginTop: '1.5rem',
+    },
     form: {
         display: 'flex',
         flexDirection: 'column',
@@ -21,9 +26,11 @@ export const useStyles = makeStyles(theme => ({
         borderTop: `1px solid ${theme.palette.grey[300]}`,
         paddingTop: 15,
     },
+    errorsContainer: {
+        marginTop: '1rem',
+    },
     cancelButton: {
         marginLeft: '1.5rem',
-        color: theme.palette.primary.light,
     },
     inputDescription: {
         marginBottom: '1rem',
@@ -53,7 +60,6 @@ export const useStyles = makeStyles(theme => ({
     },
     backButton: {
         marginRight: 'auto',
-        color: theme.palette.primary.light,
     },
     addContextContainer: {
         marginTop: '1rem',

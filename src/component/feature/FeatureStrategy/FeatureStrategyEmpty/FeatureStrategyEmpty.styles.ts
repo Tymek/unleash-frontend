@@ -1,17 +1,23 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
-    noItemsParagraph: {
-        margin: '1rem 0',
+export const useStyles = makeStyles()(theme => ({
+    container: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: theme.spacing(2),
     },
-    link: {
-        display: 'block',
-        margin: '1rem 0 0 0',
-        color: 'inherit',
+    title: {
+        fontSize: theme.fontSizes.bodySize,
+        textAlign: 'center',
+        color: theme.palette.text.primary,
+        marginBottom: theme.spacing(1),
     },
-    envName: {
-        position: 'relative',
-        top: '6px',
-        fontWeight: 'bold',
+    description: {
+        color: theme.palette.text.secondary,
+        fontSize: theme.fontSizes.smallBody,
+        textAlign: 'center',
+        marginBottom: theme.spacing(3),
     },
 }));

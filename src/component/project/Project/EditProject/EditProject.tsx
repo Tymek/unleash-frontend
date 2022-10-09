@@ -1,4 +1,4 @@
-import { useHistory, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ProjectForm from '../ProjectForm/ProjectForm';
 import useProjectForm from '../hooks/useProjectForm';
 import { UpdateButton } from 'component/common/UpdateButton/UpdateButton';
@@ -9,13 +9,20 @@ import useProject from 'hooks/api/getters/useProject/useProject';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import useToast from 'hooks/useToast';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
+import { useContext } from 'react';
+import AccessContext from 'contexts/AccessContext';
+import { Alert } from '@mui/material';
+import { GO_BACK } from 'constants/navigate';
 
 const EditProject = () => {
     const { uiConfig } = useUiConfig();
     const { setToastData, setToastApiError } = useToast();
-    const { id } = useParams<{ id: string }>();
+    const { hasAccess } = useContext(AccessContext);
+    const id = useRequiredPathParam('projectId');
     const { project } = useProject(id);
-    const history = useHistory();
+    const navigate = useNavigate();
+
     const {
         projectId,
         projectName,
@@ -52,7 +59,7 @@ const EditProject = () => {
             try {
                 await editProject(id, payload);
                 refetch();
-                history.push(`/projects/${id}`);
+                navigate(`/projects/${id}`);
                 setToastData({
                     title: 'Project information updated',
                     type: 'success',
@@ -64,8 +71,14 @@ const EditProject = () => {
     };
 
     const handleCancel = () => {
-        history.goBack();
+        navigate(GO_BACK);
     };
+
+    const accessDeniedAlert = !hasAccess(UPDATE_PROJECT, projectId) && (
+        <Alert severity="error" sx={{ mb: 4 }}>
+            You do not have the required permissions to edit this project.
+        </Alert>
+    );
 
     return (
         <FormTemplate
@@ -73,8 +86,10 @@ const EditProject = () => {
             title="Edit project"
             description="Projects allows you to group feature toggles together in the management UI."
             documentationLink="https://docs.getunleash.io/user_guide/projects"
+            documentationLinkLabel="Projects documentation"
             formatApiCode={formatApiCode}
         >
+            {accessDeniedAlert}
             <ProjectForm
                 errors={errors}
                 handleSubmit={handleSubmit}
@@ -89,7 +104,10 @@ const EditProject = () => {
                 clearErrors={clearErrors}
                 validateProjectId={validateProjectId}
             >
-                <UpdateButton permission={UPDATE_PROJECT} />
+                <UpdateButton
+                    permission={UPDATE_PROJECT}
+                    projectId={projectId}
+                />
             </ProjectForm>
         </FormTemplate>
     );

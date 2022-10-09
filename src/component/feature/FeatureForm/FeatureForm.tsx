@@ -4,19 +4,19 @@ import {
     FormControlLabel,
     Switch,
     Typography,
-} from '@material-ui/core';
+} from '@mui/material';
 import { useStyles } from './FeatureForm.styles';
 import FeatureTypeSelect from '../FeatureView/FeatureSettings/FeatureSettingsMetadata/FeatureTypeSelect/FeatureTypeSelect';
 import { CF_DESC_ID, CF_NAME_ID, CF_TYPE_ID } from 'utils/testIds';
 import useFeatureTypes from 'hooks/api/getters/useFeatureTypes/useFeatureTypes';
-import { KeyboardArrowDownOutlined } from '@material-ui/icons';
+import { KeyboardArrowDownOutlined } from '@mui/icons-material';
 import { projectFilterGenerator } from 'utils/projectFilterGenerator';
 import FeatureProjectSelect from '../FeatureView/FeatureSettings/FeatureSettingsProject/FeatureProjectSelect/FeatureProjectSelect';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { trim } from 'component/common/util';
 import Input from 'component/common/Input/Input';
 import { CREATE_FEATURE } from 'component/providers/AccessProvider/permissions';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import React from 'react';
 import { useAuthPermissions } from 'hooks/api/getters/useAuth/useAuthPermissions';
 
@@ -58,9 +58,9 @@ const FeatureForm: React.FC<IFeatureToggleForm> = ({
     mode,
     clearErrors,
 }) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const { featureTypes } = useFeatureTypes();
-    const history = useHistory();
+    const navigate = useNavigate();
     const { permissions } = useAuthPermissions();
     const editable = mode !== 'Edit';
 
@@ -79,12 +79,13 @@ const FeatureForm: React.FC<IFeatureToggleForm> = ({
                     disabled={mode === 'Edit'}
                     className={styles.input}
                     label="Name"
+                    id="feature-toggle-name"
                     error={Boolean(errors.name)}
                     errorText={errors.name}
                     onFocus={() => clearErrors()}
                     value={name}
                     onChange={e => setName(trim(e.target.value))}
-                    data-test={CF_NAME_ID}
+                    data-testid={CF_NAME_ID}
                     onBlur={validateToggleName}
                 />
                 <p className={styles.inputDescription}>
@@ -92,12 +93,11 @@ const FeatureForm: React.FC<IFeatureToggleForm> = ({
                 </p>
                 <FeatureTypeSelect
                     value={type}
-                    // @ts-expect-error
-                    onChange={(e: React.ChangeEvent) => setType(e.target.value)}
+                    onChange={setType}
                     label={'Toggle type'}
                     id="feature-type-select"
                     editable
-                    data-test={CF_TYPE_ID}
+                    data-testid={CF_TYPE_ID}
                     IconComponent={KeyboardArrowDownOutlined}
                     className={styles.selectInput}
                 />
@@ -114,15 +114,14 @@ const FeatureForm: React.FC<IFeatureToggleForm> = ({
                 />
                 <FeatureProjectSelect
                     value={project}
-                    onChange={e => {
-                        setProject(e.target.value);
-                        history.replace(
-                            `/projects/${e.target.value}/create-toggle`
-                        );
+                    onChange={projectId => {
+                        setProject(projectId);
+                        navigate(`/projects/${projectId}/create-toggle`, {
+                            replace: true,
+                        });
                     }}
                     enabled={editable}
                     filter={projectFilterGenerator(permissions, CREATE_FEATURE)}
-                    // @ts-expect-error
                     IconComponent={KeyboardArrowDownOutlined}
                     className={styles.selectInput}
                 />
@@ -137,7 +136,7 @@ const FeatureForm: React.FC<IFeatureToggleForm> = ({
                     label="Description"
                     placeholder="A short description of the feature toggle"
                     value={description}
-                    data-test={CF_DESC_ID}
+                    data-testid={CF_DESC_ID}
                     onChange={e => setDescription(e.target.value)}
                 />
                 <FormControl className={styles.input}>
@@ -145,6 +144,7 @@ const FeatureForm: React.FC<IFeatureToggleForm> = ({
                         variant="subtitle1"
                         className={styles.roleSubtitle}
                         data-loading
+                        component="h2"
                     >
                         Impression Data
                     </Typography>
@@ -153,7 +153,6 @@ const FeatureForm: React.FC<IFeatureToggleForm> = ({
                         your client SDKs will emit events you can listen for
                         every time this toggle gets triggered. Learn more in{' '}
                         <a
-                            className={styles.link}
                             target="_blank"
                             rel="noopener noreferrer"
                             href="https://docs.getunleash.io/advanced/impression_data"

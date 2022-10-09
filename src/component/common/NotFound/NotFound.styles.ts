@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles({
+export const useStyles = makeStyles()({
     container: {
         display: 'flex',
         justifyContent: 'center',
@@ -8,6 +8,7 @@ export const useStyles = makeStyles({
         minHeight: '100vh',
         padding: '2rem',
         position: 'fixed',
+        inset: 0,
         backgroundColor: '#fff',
         width: '100%',
     },

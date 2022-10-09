@@ -1,9 +1,9 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
         maxWidth: '450px',
-        background: '#fff',
+        background: theme.palette.background.paper,
         boxShadow: '2px 2px 4px rgba(0,0,0,0.4)',
         zIndex: 500,
         margin: '0 0.8rem',
@@ -28,6 +28,7 @@ export const useStyles = makeStyles(theme => ({
     },
     textContainer: {
         marginLeft: '1rem',
+        wordBreak: 'break-word',
     },
     headerStyles: {
         fontWeight: 'normal',
@@ -49,7 +50,7 @@ export const useStyles = makeStyles(theme => ({
     buttonStyle: {
         position: 'absolute',
         top: '-33px',
-        right: '-29px',
+        right: '-33px',
     },
     '@keyframes drop': {
         '0%': {

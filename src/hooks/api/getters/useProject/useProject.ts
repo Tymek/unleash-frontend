@@ -1,39 +1,36 @@
-import useSWR, { mutate, SWRConfiguration } from 'swr';
-import { useState, useEffect } from 'react';
+import useSWR, { SWRConfiguration } from 'swr';
+import { useCallback } from 'react';
 import { getProjectFetcher } from './getProjectFetcher';
 import { IProject } from 'interfaces/project';
-import { fallbackProject } from './fallbackProject';
-import useSort from 'hooks/useSort';
+
+const fallbackProject: IProject = {
+    features: [],
+    environments: [],
+    name: '',
+    health: 0,
+    members: 0,
+    version: '1',
+    description: 'Default',
+};
 
 const useProject = (id: string, options: SWRConfiguration = {}) => {
     const { KEY, fetcher } = getProjectFetcher(id);
-    const [sort] = useSort();
+    const { data, error, mutate } = useSWR<IProject>(KEY, fetcher, options);
 
-    const { data, error } = useSWR<IProject>(KEY, fetcher, options);
-    const [loading, setLoading] = useState(!error && !data);
-
-    const refetch = () => {
-        mutate(KEY);
-    };
-
-    useEffect(() => {
-        setLoading(!error && !data);
-    }, [data, error]);
-
-    const sortedData = (data: IProject | undefined): IProject => {
-        if (data) {
-            // @ts-expect-error
-            return { ...data, features: sort(data.features || []) };
-        }
-        return fallbackProject;
-    };
+    const refetch = useCallback(() => {
+        mutate();
+    }, [mutate]);
 
     return {
-        project: sortedData(data),
+        project: data || fallbackProject,
+        loading: !error && !data,
         error,
-        loading,
         refetch,
     };
+};
+
+export const useProjectNameOrId = (id: string): string => {
+    return useProject(id).project.name || id;
 };
 
 export default useProject;

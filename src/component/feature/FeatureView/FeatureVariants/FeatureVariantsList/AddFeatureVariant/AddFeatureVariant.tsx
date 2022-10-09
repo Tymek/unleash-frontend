@@ -1,30 +1,30 @@
-import React, { useEffect, useState, ChangeEvent } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Button,
     FormControl,
     FormControlLabel,
     Grid,
     InputAdornment,
-    Tooltip,
-} from '@material-ui/core';
-import { Info } from '@material-ui/icons';
+} from '@mui/material';
 import { weightTypes } from './enums';
 import { OverrideConfig } from './OverrideConfig/OverrideConfig';
-import ConditionallyRender from 'component/common/ConditionallyRender';
-import { useCommonStyles } from 'themes/commonStyles';
-import Dialogue from 'component/common/Dialogue';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
+import { useThemeStyles } from 'themes/themeStyles';
+import { Dialogue } from 'component/common/Dialogue/Dialogue';
 import { modalStyles, trim } from 'component/common/util';
 import PermissionSwitch from 'component/common/PermissionSwitch/PermissionSwitch';
 import { UPDATE_FEATURE_VARIANTS } from 'component/providers/AccessProvider/permissions';
 import { useFeature } from 'hooks/api/getters/useFeature/useFeature';
-import { useParams } from 'react-router-dom';
-import { IFeatureViewParams } from 'interfaces/params';
-import { IFeatureVariant, IOverride } from 'interfaces/featureToggle';
+import { IFeatureVariant } from 'interfaces/featureToggle';
 import cloneDeep from 'lodash.clonedeep';
 import GeneralSelect from 'component/common/GeneralSelect/GeneralSelect';
 import { useStyles } from './AddFeatureVariant.styles';
 import Input from 'component/common/Input/Input';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import useUnleashContext from 'hooks/api/getters/useUnleashContext/useUnleashContext';
+import { HelpIcon } from 'component/common/HelpIcon/HelpIcon';
+import { useOverrides } from './useOverrides';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
 
 const payloadOptions = [
     { key: 'string', label: 'string' },
@@ -55,15 +55,17 @@ export const AddVariant = ({
     title,
     editing,
 }: IAddVariantProps) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const [data, setData] = useState<Record<string, string>>({});
     const [payload, setPayload] = useState(EMPTY_PAYLOAD);
-    const [overrides, setOverrides] = useState<IOverride[]>([]);
+    const [overrides, overridesDispatch] = useOverrides([]);
     const [error, setError] = useState<Record<string, string>>({});
-    const commonStyles = useCommonStyles();
-    const { projectId, featureId } = useParams<IFeatureViewParams>();
+    const { classes: themeStyles } = useThemeStyles();
+    const projectId = useRequiredPathParam('projectId');
+    const featureId = useRequiredPathParam('featureId');
     const { feature } = useFeature(projectId, featureId);
     const [variants, setVariants] = useState<IFeatureVariant[]>([]);
+    const { context } = useUnleashContext();
 
     const isValidJSON = (input: string): boolean => {
         try {
@@ -91,14 +93,17 @@ export const AddVariant = ({
                 setPayload(EMPTY_PAYLOAD);
             }
             if (editVariant.overrides) {
-                setOverrides(editVariant.overrides);
+                overridesDispatch({
+                    type: 'SET',
+                    payload: editVariant.overrides,
+                });
             } else {
-                setOverrides([]);
+                overridesDispatch({ type: 'CLEAR' });
             }
         } else {
             setData({});
             setPayload(EMPTY_PAYLOAD);
-            setOverrides([]);
+            overridesDispatch({ type: 'CLEAR' });
         }
         setError({});
     };
@@ -110,13 +115,11 @@ export const AddVariant = ({
         if (feature) {
             setClonedVariants(feature.variants);
         }
-        /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    }, [feature.variants]);
+    }, [feature.variants]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         clear();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [editVariant]);
+    }, [editVariant]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const setVariantValue = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -187,14 +190,9 @@ export const AddVariant = ({
         }
     };
 
-    const onPayload = (e: ChangeEvent<{ name?: string; value: unknown }>) => {
-        e.preventDefault();
+    const onPayload = (name: string) => (value: string) => {
         setError({ payload: '' });
-        setPayload({
-            ...payload,
-            // @ts-expect-error
-            [e.target.name]: e.target.value,
-        });
+        setPayload({ ...payload, [name]: value });
     };
 
     const onCancel = (e: React.SyntheticEvent) => {
@@ -203,43 +201,13 @@ export const AddVariant = ({
         closeDialog();
     };
 
-    const updateOverrideType =
-        (index: number) => (e: ChangeEvent<HTMLInputElement>) => {
-            e.preventDefault();
-            setOverrides(
-                overrides.map((o, i) => {
-                    if (i === index) {
-                        // @ts-expect-error
-                        o[e.target.name] = e.target.value;
-                    }
-
-                    return o;
-                })
-            );
-        };
-
-    const updateOverrideValues = (index: number, values: string[]) => {
-        setOverrides(
-            overrides.map((o, i) => {
-                if (i === index) {
-                    o.values = values;
-                }
-                return o;
-            })
-        );
-    };
-
-    const removeOverride = (index: number) => (e: React.SyntheticEvent) => {
-        e.preventDefault();
-        setOverrides(overrides.filter((o, i) => i !== index));
-    };
-
-    const onAddOverride = (e: React.SyntheticEvent) => {
-        e.preventDefault();
-        setOverrides([
-            ...overrides,
-            ...[{ contextName: 'userId', values: [] }],
-        ]);
+    const onAddOverride = () => {
+        if (context.length > 0) {
+            overridesDispatch({
+                type: 'ADD',
+                payload: { contextName: context[0].name, values: [] },
+            });
+        }
     };
 
     const isFixWeight = data.weightType === weightTypes.FIX;
@@ -262,13 +230,14 @@ export const AddVariant = ({
             <form
                 id={formId}
                 onSubmit={submit}
-                className={commonStyles.contentSpacingY}
+                className={themeStyles.contentSpacingY}
             >
                 <p className={styles.error}>{error.general}</p>
                 <Input
                     label="Variant name"
                     autoFocus
                     name="name"
+                    id="variant-name"
                     className={styles.input}
                     errorText={error.name}
                     value={data.name || ''}
@@ -277,7 +246,7 @@ export const AddVariant = ({
                     type="name"
                     disabled={editing}
                     onChange={setVariantValue}
-                    data-test={'VARIANT_NAME_INPUT'}
+                    data-testid={'VARIANT_NAME_INPUT'}
                 />
                 <br />
                 <Grid container>
@@ -299,8 +268,8 @@ export const AddVariant = ({
                                                 projectId={projectId}
                                                 name="weightType"
                                                 checked={isFixWeight}
-                                                data-test={
-                                                    'VARIANT_WEIGHT_TYPE'
+                                                data-testid={
+                                                    'VARIANT_WEIGHT_CHECK'
                                                 }
                                                 onChange={setVariantWeightType}
                                             />
@@ -318,9 +287,9 @@ export const AddVariant = ({
                             <Grid item md={4}>
                                 <Input
                                     id="weight"
-                                    label="Weight"
+                                    label="Variant weight"
                                     name="weight"
-                                    data-test={'VARIANT_WEIGHT_INPUT'}
+                                    data-testid={'VARIANT_WEIGHT_INPUT'}
                                     InputProps={{
                                         endAdornment: (
                                             <InputAdornment position="start">
@@ -346,12 +315,7 @@ export const AddVariant = ({
                 </Grid>
                 <p className={styles.label}>
                     <strong>Payload </strong>
-                    <Tooltip
-                        title="Passed to the variant object. Can be anything
-                        (json, value, csv)"
-                    >
-                        <Info className={styles.info} />
-                    </Tooltip>
+                    <HelpIcon tooltip="Passed along with the the variant object." />
                 </p>
                 <Grid container>
                     <Grid item md={2} sm={2} xs={4}>
@@ -362,24 +326,27 @@ export const AddVariant = ({
                             className={styles.select}
                             value={payload.type}
                             options={payloadOptions}
-                            onChange={onPayload}
+                            onChange={onPayload('type')}
                         />
                     </Grid>
                     <Grid item md={8} sm={8} xs={6}>
                         <Input
                             error={Boolean(error.payload)}
                             errorText={error.payload}
-                            name="value"
-                            className={commonStyles.fullWidth}
+                            name="variant-payload-value"
+                            id="variant-payload-value"
+                            label="Value"
+                            multiline={payload.type !== 'string'}
+                            rows={payload.type === 'string' ? 1 : 4}
+                            className={themeStyles.fullWidth}
                             value={payload.value}
-                            onChange={onPayload}
-                            data-test={'VARIANT_PAYLOAD_VALUE'}
+                            onChange={e => onPayload('value')(e.target.value)}
+                            data-testid={'VARIANT_PAYLOAD_VALUE'}
                             placeholder={
                                 payload.type === 'json'
                                     ? '{ "hello": "world" }'
-                                    : 'value'
+                                    : ''
                             }
-                            label="value"
                         />
                     </Grid>
                 </Grid>
@@ -388,17 +355,13 @@ export const AddVariant = ({
                     show={
                         <p className={styles.label}>
                             <strong>Overrides </strong>
-                            <Tooltip title="Here you can specify which users should get this variant.">
-                                <Info className={styles.info} />
-                            </Tooltip>
+                            <HelpIcon tooltip="Here you can specify which users should get this variant." />
                         </p>
                     }
                 />
                 <OverrideConfig
                     overrides={overrides}
-                    removeOverride={removeOverride}
-                    updateOverrideType={updateOverrideType}
-                    updateOverrideValues={updateOverrideValues}
+                    overridesDispatch={overridesDispatch}
                 />
                 <Button
                     onClick={onAddOverride}

@@ -4,9 +4,11 @@ import { SegmentFormStepOne } from '../SegmentFormStepOne/SegmentFormStepOne';
 import { SegmentFormStepTwo } from '../SegmentFormStepTwo/SegmentFormStepTwo';
 import React, { useState } from 'react';
 import { SegmentFormStepList } from 'component/segments/SegmentFormStepList/SegmentFormStepList';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 
 export type SegmentFormStep = 1 | 2;
+export type SegmentFormMode = 'create' | 'edit';
+
 interface ISegmentProps {
     name: string;
     description: string;
@@ -16,8 +18,8 @@ interface ISegmentProps {
     setConstraints: React.Dispatch<React.SetStateAction<IConstraint[]>>;
     handleSubmit: (e: any) => void;
     errors: { [key: string]: string };
-    mode: 'Create' | 'Edit';
     clearErrors: () => void;
+    mode: SegmentFormMode;
 }
 
 export const SegmentForm: React.FC<ISegmentProps> = ({
@@ -31,8 +33,9 @@ export const SegmentForm: React.FC<ISegmentProps> = ({
     handleSubmit,
     errors,
     clearErrors,
+    mode,
 }) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const totalSteps = 2;
     const [currentStep, setCurrentStep] = useState<SegmentFormStep>(1);
 
@@ -61,6 +64,7 @@ export const SegmentForm: React.FC<ISegmentProps> = ({
                             constraints={constraints}
                             setConstraints={setConstraints}
                             setCurrentStep={setCurrentStep}
+                            mode={mode}
                         >
                             {children}
                         </SegmentFormStepTwo>

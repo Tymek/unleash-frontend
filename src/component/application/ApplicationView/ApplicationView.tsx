@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
     Grid,
     List,
@@ -7,28 +7,30 @@ import {
     ListItemAvatar,
     ListItemText,
     Typography,
-} from '@material-ui/core';
+    Divider,
+} from '@mui/material';
 import {
     Extension,
     FlagRounded,
     Report,
     SvgIconComponent,
     Timeline,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import {
     CREATE_FEATURE,
     CREATE_STRATEGY,
 } from 'component/providers/AccessProvider/permissions';
-import ConditionallyRender from 'component/common/ConditionallyRender/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { getTogglePath } from 'utils/routePathHelpers';
 import useApplication from 'hooks/api/getters/useApplication/useApplication';
 import AccessContext from 'contexts/AccessContext';
 import { formatDateYMDHMS } from 'utils/formatDate';
 import { useLocationSettings } from 'hooks/useLocationSettings';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
 
 export const ApplicationView = () => {
     const { hasAccess } = useContext(AccessContext);
-    const { name } = useParams<{ name: string }>();
+    const name = useRequiredPathParam('name');
     const { application } = useApplication(name);
     const { locationSettings } = useLocationSettings();
     const { instances, strategies, seenToggles } = application;
@@ -106,7 +108,7 @@ export const ApplicationView = () => {
                 <Typography variant="subtitle1" style={{ padding: '1rem 0' }}>
                     Toggles
                 </Typography>
-                <hr />
+                <Divider />
                 <List>
                     {seenToggles.map(
                         ({ name, description, notFound, project }, i) => (
@@ -134,7 +136,7 @@ export const ApplicationView = () => {
                 <Typography variant="subtitle1" style={{ padding: '1rem 0' }}>
                     Implemented strategies
                 </Typography>
-                <hr />
+                <Divider />
                 <List>
                     {strategies.map(
                         ({ name, description, notFound }, i: number) => (
@@ -147,7 +149,7 @@ export const ApplicationView = () => {
                                     permission: CREATE_STRATEGY,
                                 })}
                                 elseShow={foundListItem({
-                                    viewUrl: '/strategies/view',
+                                    viewUrl: '/strategies',
                                     name,
                                     Icon: Extension,
                                     description,
@@ -162,7 +164,7 @@ export const ApplicationView = () => {
                 <Typography variant="subtitle1" style={{ padding: '1rem 0' }}>
                     {instances.length} Instances registered
                 </Typography>
-                <hr />
+                <Divider />
                 <List>
                     {instances.map(
                         ({

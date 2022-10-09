@@ -7,29 +7,30 @@ import {
     LinearProgress,
     Link,
     Typography,
-} from '@material-ui/core';
-import { Link as LinkIcon } from '@material-ui/icons';
-import ConditionallyRender from 'component/common/ConditionallyRender/ConditionallyRender';
+} from '@mui/material';
+import { Link as LinkIcon } from '@mui/icons-material';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { UPDATE_APPLICATION } from 'component/providers/AccessProvider/permissions';
 import { ApplicationView } from '../ApplicationView/ApplicationView';
 import { ApplicationUpdate } from '../ApplicationUpdate/ApplicationUpdate';
-import TabNav from 'component/common/TabNav/TabNav';
-import Dialogue from 'component/common/Dialogue';
-import PageContent from 'component/common/PageContent';
-import HeaderTitle from 'component/common/HeaderTitle';
+import { TabNav } from 'component/common/TabNav/TabNav/TabNav';
+import { Dialogue } from 'component/common/Dialogue/Dialogue';
+import { PageContent } from 'component/common/PageContent/PageContent';
+import { PageHeader } from 'component/common/PageHeader/PageHeader';
 import AccessContext from 'contexts/AccessContext';
 import useApplicationsApi from 'hooks/api/actions/useApplicationsApi/useApplicationsApi';
 import useApplication from 'hooks/api/getters/useApplication/useApplication';
-import { useHistory, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useLocationSettings } from 'hooks/useLocationSettings';
 import useToast from 'hooks/useToast';
 import PermissionButton from 'component/common/PermissionButton/PermissionButton';
 import { formatDateYMD } from 'utils/formatDate';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { useRequiredPathParam } from 'hooks/useRequiredPathParam';
 
 export const ApplicationEdit = () => {
-    const history = useHistory();
-    const { name } = useParams<{ name: string }>();
+    const navigate = useNavigate();
+    const name = useRequiredPathParam('name');
     const { application, loading } = useApplication(name);
     const { appName, url, description, icon = 'apps', createdAt } = application;
     const { hasAccess } = useContext(AccessContext);
@@ -54,7 +55,7 @@ export const ApplicationEdit = () => {
                 text: 'Application deleted successfully',
                 type: 'success',
             });
-            history.push('/applications');
+            navigate('/applications');
         } catch (error: unknown) {
             setToastApiError(formatUnknownError(error));
         }
@@ -91,9 +92,9 @@ export const ApplicationEdit = () => {
     }
     return (
         <PageContent
-            headerContent={
-                <HeaderTitle
-                    title={
+            header={
+                <PageHeader
+                    titleElement={
                         <span
                             style={{
                                 display: 'flex',
@@ -106,19 +107,24 @@ export const ApplicationEdit = () => {
                             {appName}
                         </span>
                     }
+                    title={appName}
                     actions={
                         <>
                             <ConditionallyRender
                                 condition={Boolean(url)}
                                 show={
-                                    <IconButton component={Link} href={url}>
-                                        <LinkIcon />
+                                    <IconButton
+                                        component={Link}
+                                        href={url}
+                                        size="large"
+                                    >
+                                        <LinkIcon titleAccess={url} />
                                     </IconButton>
                                 }
                             />
 
                             <PermissionButton
-                                title="Delete application"
+                                tooltipProps={{ title: 'Delete application' }}
                                 onClick={toggleModal}
                                 permission={UPDATE_APPLICATION}
                             >

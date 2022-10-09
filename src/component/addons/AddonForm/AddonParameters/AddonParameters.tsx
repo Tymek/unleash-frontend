@@ -1,27 +1,30 @@
 import React from 'react';
-import { IAddonConfig, IAddonProvider } from 'interfaces/addons';
-import { AddonParameter } from './AddonParameter/AddonParameter';
+import { IAddonProvider } from 'interfaces/addons';
+import {
+    AddonParameter,
+    IAddonParameterProps,
+} from './AddonParameter/AddonParameter';
+import { StyledTitle } from '../AddonForm.styles';
 
 interface IAddonParametersProps {
-    provider: IAddonProvider;
-    errors: Record<string, string>;
+    provider?: IAddonProvider;
+    parametersErrors: IAddonParameterProps['parametersErrors'];
     editMode: boolean;
-    setParameterValue: (param: string) => void;
-    config: IAddonConfig;
+    setParameterValue: IAddonParameterProps['setParameterValue'];
+    config: IAddonParameterProps['config'];
 }
 
 export const AddonParameters = ({
     provider,
     config,
-    errors,
+    parametersErrors,
     setParameterValue,
     editMode,
 }: IAddonParametersProps) => {
     if (!provider) return null;
-
     return (
         <React.Fragment>
-            <h4>Parameters</h4>
+            <StyledTitle>Parameters</StyledTitle>
             {editMode ? (
                 <p>
                     Sensitive parameters will be masked with value "<i>*****</i>
@@ -30,11 +33,10 @@ export const AddonParameters = ({
                 </p>
             ) : null}
             {provider.parameters.map(parameter => (
-                // @ts-expect-error
                 <AddonParameter
                     key={parameter.name}
                     definition={parameter}
-                    errors={errors}
+                    parametersErrors={parametersErrors}
                     config={config}
                     setParameterValue={setParameterValue}
                 />

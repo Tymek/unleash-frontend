@@ -1,15 +1,16 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     pageContent: {
         minHeight: '200px',
     },
     divider: {
         height: '1px',
-        width: '106.65%',
-        marginLeft: '-2rem',
-        backgroundColor: '#efefef',
-        marginTop: '2rem',
+        position: 'relative',
+        left: 0,
+        right: 0,
+        backgroundColor: theme.palette.divider,
+        margin: theme.spacing(4, -4, 3),
     },
     inputLabel: { backgroundColor: '#fff' },
     roleName: {

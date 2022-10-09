@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import useFeatureStrategyApi from 'hooks/api/actions/useFeatureStrategyApi/useFeatureStrategyApi';
 import { formatUnknownError } from 'utils/formatUnknownError';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useToast from 'hooks/useToast';
 import { formatFeaturePath } from '../FeatureStrategyEdit/FeatureStrategyEdit';
-import Dialogue from 'component/common/Dialogue';
-import { Alert } from '@material-ui/lab';
+import { Dialogue } from 'component/common/Dialogue/Dialogue';
+import { Alert } from '@mui/material';
 import PermissionButton from 'component/common/PermissionButton/PermissionButton';
 import { DELETE_FEATURE_STRATEGY } from 'component/providers/AccessProvider/permissions';
 import { useFeature } from 'hooks/api/getters/useFeature/useFeature';
 import { STRATEGY_FORM_REMOVE_ID } from 'utils/testIds';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import PermissionIconButton from 'component/common/PermissionIconButton/PermissionIconButton';
-import { Delete } from '@material-ui/icons';
+import { Delete } from '@mui/icons-material';
 
 interface IFeatureStrategyRemoveProps {
     projectId: string;
@@ -35,7 +35,7 @@ export const FeatureStrategyRemove = ({
     const { deleteStrategyFromFeature } = useFeatureStrategyApi();
     const { refetchFeature } = useFeature(projectId, featureId);
     const { setToastData, setToastApiError } = useToast();
-    const { push } = useHistory();
+    const navigate = useNavigate();
 
     const onRemove = async (event: React.FormEvent) => {
         try {
@@ -51,7 +51,7 @@ export const FeatureStrategyRemove = ({
                 type: 'success',
             });
             refetchFeature();
-            push(formatFeaturePath(projectId, featureId));
+            navigate(formatFeaturePath(projectId, featureId));
         } catch (error: unknown) {
             setToastApiError(formatUnknownError(error));
         }
@@ -68,10 +68,11 @@ export const FeatureStrategyRemove = ({
                         environmentId={environmentId}
                         disabled={disabled}
                         permission={DELETE_FEATURE_STRATEGY}
-                        data-test={STRATEGY_FORM_REMOVE_ID}
+                        data-testid={STRATEGY_FORM_REMOVE_ID}
+                        tooltipProps={{ title: 'Remove strategy' }}
                         type="button"
                     >
-                        <Delete titleAccess="Delete strategy" />
+                        <Delete />
                     </PermissionIconButton>
                 }
                 elseShow={
@@ -81,25 +82,25 @@ export const FeatureStrategyRemove = ({
                         environmentId={environmentId}
                         disabled={disabled}
                         permission={DELETE_FEATURE_STRATEGY}
-                        data-test={STRATEGY_FORM_REMOVE_ID}
+                        data-testid={STRATEGY_FORM_REMOVE_ID}
                         color="secondary"
                         variant="text"
                         type="button"
                     >
-                        Delete strategy
+                        Remove strategy
                     </PermissionButton>
                 }
             />
             <Dialogue
                 title="Are you sure you want to delete this strategy?"
                 open={openDialogue}
-                primaryButtonText="Delete strategy"
+                primaryButtonText="Remove strategy"
                 secondaryButtonText="Cancel"
                 onClick={onRemove}
                 onClose={() => setOpenDialogue(false)}
             >
                 <Alert severity="error">
-                    Deleting the strategy will change which users receive access
+                    Removing the strategy will change which users receive access
                     to the feature.
                 </Alert>
             </Dialogue>

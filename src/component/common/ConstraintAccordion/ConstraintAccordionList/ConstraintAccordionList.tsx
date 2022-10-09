@@ -1,25 +1,23 @@
+import React, { forwardRef, Fragment, useImperativeHandle } from 'react';
+import { Button, Tooltip } from '@mui/material';
+import { HelpOutline } from '@mui/icons-material';
 import { IConstraint } from 'interfaces/strategy';
-import React, { forwardRef, useImperativeHandle } from 'react';
 import { ConstraintAccordion } from 'component/common/ConstraintAccordion/ConstraintAccordion';
 import produce from 'immer';
 import useUnleashContext from 'hooks/api/getters/useUnleashContext/useUnleashContext';
-import PermissionButton from 'component/common/PermissionButton/PermissionButton';
-import {
-    CREATE_FEATURE_STRATEGY,
-    UPDATE_FEATURE_STRATEGY,
-} from 'component/providers/AccessProvider/permissions';
 import { useWeakMap } from 'hooks/useWeakMap';
 import { objectId } from 'utils/objectId';
 import { useStyles } from './ConstraintAccordionList.styles';
 import { createEmptyConstraint } from 'component/common/ConstraintAccordion/ConstraintAccordionList/createEmptyConstraint';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
+import { StrategySeparator } from 'component/common/StrategySeparator/StrategySeparator';
 
 interface IConstraintAccordionListProps {
-    projectId?: string;
-    environmentId?: string;
     constraints: IConstraint[];
     setConstraints?: React.Dispatch<React.SetStateAction<IConstraint[]>>;
     showCreateButton?: boolean;
+    /* Add "Custom constraints" title on the top - default `true` */
+    showLabel?: boolean;
 }
 
 // Ref methods exposed by this component.
@@ -42,13 +40,7 @@ export const ConstraintAccordionList = forwardRef<
     IConstraintAccordionListProps
 >(
     (
-        {
-            projectId,
-            environmentId,
-            constraints,
-            setConstraints,
-            showCreateButton,
-        },
+        { constraints, setConstraints, showCreateButton, showLabel = true },
         ref
     ) => {
         const state = useWeakMap<
@@ -56,7 +48,7 @@ export const ConstraintAccordionList = forwardRef<
             IConstraintAccordionListItemState
         >();
         const { context } = useUnleashContext();
-        const styles = useStyles();
+        const { classes: styles } = useStyles();
 
         const addConstraint =
             setConstraints &&
@@ -118,36 +110,65 @@ export const ConstraintAccordionList = forwardRef<
         return (
             <div className={styles.container} id={constraintAccordionListId}>
                 <ConditionallyRender
-                    condition={Boolean(showCreateButton && setConstraints)}
+                    condition={
+                        constraints && constraints.length > 0 && showLabel
+                    }
                     show={
-                        <PermissionButton
-                            type="button"
-                            onClick={onAdd}
-                            variant="text"
-                            permission={[
-                                UPDATE_FEATURE_STRATEGY,
-                                CREATE_FEATURE_STRATEGY,
-                            ]}
-                            environmentId={environmentId}
-                            projectId={projectId}
-                        >
-                            Add custom constraint
-                        </PermissionButton>
+                        <p className={styles.customConstraintLabel}>
+                            Custom constraints
+                        </p>
                     }
                 />
                 {constraints.map((constraint, index) => (
-                    <ConstraintAccordion
-                        key={objectId(constraint)}
-                        environmentId={environmentId}
-                        constraint={constraint}
-                        onEdit={onEdit && onEdit.bind(null, constraint)}
-                        onCancel={onCancel.bind(null, index)}
-                        onDelete={onRemove && onRemove.bind(null, index)}
-                        onSave={onSave && onSave.bind(null, index)}
-                        editing={Boolean(state.get(constraint)?.editing)}
-                        compact
-                    />
+                    <Fragment key={objectId(constraint)}>
+                        <ConditionallyRender
+                            condition={index > 0}
+                            show={<StrategySeparator text="AND" />}
+                        />
+                        <ConstraintAccordion
+                            constraint={constraint}
+                            onEdit={onEdit && onEdit.bind(null, constraint)}
+                            onCancel={onCancel.bind(null, index)}
+                            onDelete={onRemove && onRemove.bind(null, index)}
+                            onSave={onSave && onSave.bind(null, index)}
+                            editing={Boolean(state.get(constraint)?.editing)}
+                            compact
+                        />
+                    </Fragment>
                 ))}
+                <ConditionallyRender
+                    condition={Boolean(showCreateButton && onAdd)}
+                    show={
+                        <div>
+                            <div className={styles.addCustomLabel}>
+                                <p>Add any number of custom constraints</p>
+                                <Tooltip
+                                    title="Help"
+                                    arrow
+                                    className={styles.helpWrapper}
+                                >
+                                    <a
+                                        href={
+                                            'https://docs.getunleash.io/advanced/strategy_constraints'
+                                        }
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <HelpOutline className={styles.help} />
+                                    </a>
+                                </Tooltip>
+                            </div>
+                            <Button
+                                type="button"
+                                onClick={onAdd}
+                                variant="outlined"
+                                color="secondary"
+                            >
+                                Add custom constraint
+                            </Button>
+                        </div>
+                    }
+                />
             </div>
         );
     }

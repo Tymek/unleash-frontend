@@ -1,15 +1,11 @@
 import { IConstraint, IFeatureStrategy } from 'interfaces/strategy';
-import Constraint from 'component/common/Constraint/Constraint';
-import Dialogue from 'component/common/Dialogue/Dialogue';
-import React, { useState } from 'react';
-import StrategyConstraints from 'component/feature/StrategyConstraints/StrategyConstraints';
-import { List, ListItem } from '@material-ui/core';
-import produce from 'immer';
+import React, { useMemo, useContext } from 'react';
+import { ConstraintAccordionList } from 'component/common/ConstraintAccordion/ConstraintAccordionList/ConstraintAccordionList';
+import AccessContext from 'contexts/AccessContext';
 import {
-    CREATE_FEATURE_STRATEGY,
     UPDATE_FEATURE_STRATEGY,
+    CREATE_FEATURE_STRATEGY,
 } from 'component/providers/AccessProvider/permissions';
-import PermissionButton from 'component/common/PermissionButton/PermissionButton';
 
 interface IFeatureStrategyConstraintsProps {
     projectId: string;
@@ -26,102 +22,36 @@ export const FeatureStrategyConstraints = ({
     strategy,
     setStrategy,
 }: IFeatureStrategyConstraintsProps) => {
-    const [showConstraintsDialog, setShowConstraintsDialog] = useState(false);
+    const { hasAccess } = useContext(AccessContext);
 
-    const [constraintErrors, setConstraintErrors] = useState<
-        Record<string, string>
-    >({});
+    const constraints = useMemo(() => {
+        return strategy.constraints ?? [];
+    }, [strategy]);
 
-    const updateConstraints = (constraints: IConstraint[]) => {
-        setStrategy(prev => ({ ...prev, constraints }));
+    const setConstraints = (value: React.SetStateAction<IConstraint[]>) => {
+        setStrategy(prev => ({
+            ...prev,
+            constraints: value instanceof Function ? value(constraints) : value,
+        }));
     };
 
-    const removeConstraint = (index: number) => {
-        setStrategy(
-            produce(draft => {
-                draft.constraints?.splice(index, 1);
-            })
-        );
-    };
+    const showCreateButton = hasAccess(
+        CREATE_FEATURE_STRATEGY,
+        projectId,
+        environmentId
+    );
 
-    const onConstraintsDialogSave = () => {
-        const errors = findConstraintErrors(strategy.constraints);
-        if (Object.keys(errors).length > 0) {
-            setConstraintErrors(errors);
-        } else {
-            setShowConstraintsDialog(false);
-        }
-    };
-
-    const onConstraintsDialogClose = () => {
-        setStrategy(
-            produce(draft => {
-                draft.constraints = removeEmptyConstraints(draft.constraints);
-            })
-        );
-        setShowConstraintsDialog(false);
-    };
+    const allowEditAndDelete = hasAccess(
+        UPDATE_FEATURE_STRATEGY,
+        projectId,
+        environmentId
+    );
 
     return (
-        <div>
-            <List disablePadding dense>
-                {strategy.constraints?.map((constraint, index) => (
-                    <ListItem key={index} disableGutters dense>
-                        <Constraint
-                            constraint={constraint}
-                            editCallback={() => setShowConstraintsDialog(true)}
-                            deleteCallback={removeConstraint.bind(null, index)}
-                        />
-                    </ListItem>
-                ))}
-            </List>
-            <Dialogue
-                title="Define constraints"
-                open={showConstraintsDialog}
-                onClick={onConstraintsDialogSave}
-                primaryButtonText="Update constraints"
-                secondaryButtonText="Cancel"
-                onClose={onConstraintsDialogClose}
-                fullWidth
-                maxWidth="md"
-            >
-                <StrategyConstraints
-                    updateConstraints={updateConstraints}
-                    constraints={strategy.constraints ?? []}
-                    constraintError={constraintErrors}
-                    setConstraintError={setConstraintErrors}
-                />
-            </Dialogue>
-            <PermissionButton
-                onClick={() => setShowConstraintsDialog(true)}
-                variant="text"
-                permission={[UPDATE_FEATURE_STRATEGY, CREATE_FEATURE_STRATEGY]}
-                environmentId={environmentId}
-                projectId={projectId}
-            >
-                Add constraints
-            </PermissionButton>
-        </div>
+        <ConstraintAccordionList
+            constraints={constraints}
+            setConstraints={allowEditAndDelete ? setConstraints : undefined}
+            showCreateButton={showCreateButton}
+        />
     );
-};
-
-const findConstraintErrors = (
-    constraints: IConstraint[] = []
-): Record<string, string> => {
-    const entries = constraints
-        .filter(isEmptyConstraint)
-        .map((constraint, index) => `${constraint.contextName}-${index}`)
-        .map(id => [id, 'You need to specify at least one value']);
-
-    return Object.fromEntries(entries);
-};
-
-const removeEmptyConstraints = (
-    constraints: IConstraint[] = []
-): IConstraint[] => {
-    return constraints.filter(constraint => !isEmptyConstraint(constraint));
-};
-
-const isEmptyConstraint = (constraint: IConstraint): boolean => {
-    return !constraint.values || constraint.values.length === 0;
 };

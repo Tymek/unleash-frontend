@@ -1,79 +1,72 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import classnames from 'classnames';
-import { Avatar, TextField, Typography } from '@material-ui/core';
+import { styled, TextField, Typography } from '@mui/material';
 import { trim } from 'component/common/util';
 import { modalStyles } from 'component/admin/users/util';
-import Dialogue from 'component/common/Dialogue/Dialogue';
-import PasswordChecker from 'component/user/common/ResetPasswordForm/PasswordChecker/PasswordChecker';
-import { useCommonStyles } from 'themes/commonStyles';
+import { Dialogue } from 'component/common/Dialogue/Dialogue';
+import PasswordChecker, {
+    PASSWORD_FORMAT_MESSAGE,
+} from 'component/user/common/ResetPasswordForm/PasswordChecker/PasswordChecker';
+import { useThemeStyles } from 'themes/themeStyles';
 import PasswordMatcher from 'component/user/common/ResetPasswordForm/PasswordMatcher/PasswordMatcher';
-import ConditionallyRender from 'component/common/ConditionallyRender';
-import { Alert } from '@material-ui/lab';
 import { IUser } from 'interfaces/user';
+import useAdminUsersApi from 'hooks/api/actions/useAdminUsersApi/useAdminUsersApi';
+import { UserAvatar } from 'component/common/UserAvatar/UserAvatar';
+
+const StyledUserAvatar = styled(UserAvatar)(({ theme }) => ({
+    width: theme.spacing(5),
+    height: theme.spacing(5),
+    margin: 0,
+}));
 
 interface IChangePasswordProps {
     showDialog: boolean;
     closeDialog: () => void;
-    changePassword: (user: IUser, password: string) => Promise<Response>;
-    user: Partial<IUser>;
+    user: IUser;
 }
 
 const ChangePassword = ({
     showDialog,
     closeDialog,
-    changePassword,
-    user = {},
+    user,
 }: IChangePasswordProps) => {
-    const [data, setData] = useState({});
-    const [error, setError] = useState<Record<string, string>>({});
+    const [data, setData] = useState<Record<string, string>>({});
+    const [error, setError] = useState<string>();
     const [validPassword, setValidPassword] = useState(false);
-    const commonStyles = useCommonStyles();
+    const { classes: themeStyles } = useThemeStyles();
+    const { changePassword } = useAdminUsersApi();
 
-    // @ts-expect-error
-    const updateField = e => {
-        setError({});
-        setData({
-            ...data,
-            [e.target.name]: trim(e.target.value),
-        });
+    const updateField: React.ChangeEventHandler<HTMLInputElement> = event => {
+        setError(undefined);
+        setData({ ...data, [event.target.name]: trim(event.target.value) });
     };
 
-    // @ts-expect-error
-    const submit = async e => {
-        e.preventDefault();
+    const submit = async (event: React.SyntheticEvent) => {
+        event.preventDefault();
+
+        if (data.password !== data.confirm) {
+            return;
+        }
 
         if (!validPassword) {
-            // @ts-expect-error
-            if (!data.password || data.password.length < 8) {
-                setError({
-                    password:
-                        'You must specify a password with at least 8 chars.',
-                });
-                return;
-            }
-            // @ts-expect-error
-            if (!(data.password === data.confirm)) {
-                setError({ confirm: 'Passwords does not match' });
-                return;
-            }
+            setError(PASSWORD_FORMAT_MESSAGE);
+            return;
         }
 
         try {
-            // @ts-expect-error
-            await changePassword(user, data.password);
+            await changePassword(user.id, data.password);
             setData({});
             closeDialog();
-        } catch (error) {
-            // @ts-expect-error
-            const msg = error.message || 'Could not update password';
-            setError({ general: msg });
+        } catch (error: unknown) {
+            console.warn(error);
+            setError(PASSWORD_FORMAT_MESSAGE);
         }
     };
 
-    // @ts-expect-error
-    const onCancel = e => {
-        e.preventDefault();
+    const onCancel = (event: React.SyntheticEvent) => {
+        event.preventDefault();
         setData({});
+        setError(undefined);
         closeDialog();
     };
 
@@ -86,30 +79,20 @@ const ChangePassword = ({
             primaryButtonText="Save"
             title="Update password"
             secondaryButtonText="Cancel"
+            maxWidth="xs"
         >
             <form
                 onSubmit={submit}
                 className={classnames(
-                    commonStyles.contentSpacingY,
-                    commonStyles.flexColumn
+                    themeStyles.contentSpacingY,
+                    themeStyles.flexColumn
                 )}
             >
-                <ConditionallyRender
-                    condition={Boolean(error.general)}
-                    show={<Alert severity="error">{error.general}</Alert>}
-                />
                 <Typography variant="subtitle1">
                     Changing password for user
                 </Typography>
-                <div className={commonStyles.flexRow}>
-                    <Avatar
-                        variant="rounded"
-                        alt={user.name}
-                        src={user.imageUrl}
-                        title={`${
-                            user.name || user.email || user.username
-                        } (id: ${user.id})`}
-                    />
+                <div className={themeStyles.flexRow}>
+                    <StyledUserAvatar user={user} variant="rounded" />
                     <Typography
                         variant="subtitle1"
                         style={{ marginLeft: '1rem' }}
@@ -118,7 +101,6 @@ const ChangePassword = ({
                     </Typography>
                 </div>
                 <PasswordChecker
-                    // @ts-expect-error
                     password={data.password}
                     callback={setValidPassword}
                 />
@@ -126,9 +108,9 @@ const ChangePassword = ({
                     label="New password"
                     name="password"
                     type="password"
-                    // @ts-expect-error
                     value={data.password}
-                    helperText={error.password}
+                    error={Boolean(error)}
+                    helperText={error}
                     onChange={updateField}
                     variant="outlined"
                     size="small"
@@ -137,18 +119,13 @@ const ChangePassword = ({
                     label="Confirm password"
                     name="confirm"
                     type="password"
-                    // @ts-expect-error
                     value={data.confirm}
-                    error={error.confirm !== undefined}
-                    helperText={error.confirm}
                     onChange={updateField}
                     variant="outlined"
                     size="small"
                 />
                 <PasswordMatcher
-                    // @ts-expect-error
-                    started={data.password && data.confirm}
-                    // @ts-expect-error
+                    started={Boolean(data.password && data.confirm)}
                     matchingPasswords={data.password === data.confirm}
                 />
             </form>

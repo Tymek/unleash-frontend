@@ -1,6 +1,6 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     container: {
         fontWeight: theme.fontWeight.thin,
     },
@@ -14,7 +14,7 @@ export const useStyles = makeStyles(theme => ({
         all: 'unset',
         display: 'block',
         textAlign: 'center',
-        color: theme.palette.grey[600],
+        color: theme.palette.text.secondary,
     },
     subtitle: {
         all: 'unset',

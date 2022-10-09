@@ -1,9 +1,9 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     dialogTitle: {
-        backgroundColor: theme.palette.primary.main,
-        color: '#fff',
+        backgroundColor: theme.palette.dialogHeaderBackground,
+        color: theme.palette.dialogHeaderText,
         height: '150px',
         padding: '2rem 3rem',
         clipPath: ' ellipse(130% 115px at 120% 20%)',

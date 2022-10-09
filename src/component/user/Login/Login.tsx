@@ -1,4 +1,4 @@
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import { useStyles } from 'component/user/Login/Login.styles';
 import useQueryParams from 'hooks/useQueryParams';
 import ResetPasswordSuccess from '../common/ResetPasswordSuccess/ResetPasswordSuccess';
@@ -7,10 +7,11 @@ import { DEMO_TYPE } from 'constants/authTypes';
 import Authentication from '../Authentication/Authentication';
 import { useAuthDetails } from 'hooks/api/getters/useAuth/useAuthDetails';
 import { useAuthUser } from 'hooks/api/getters/useAuth/useAuthUser';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { parseRedirectParam } from 'component/user/Login/parseRedirectParam';
 
 const Login = () => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
     const { authDetails } = useAuthDetails();
     const { user } = useAuthUser();
     const query = useQueryParams();
@@ -18,7 +19,7 @@ const Login = () => {
     const redirect = query.get('redirect') || '/';
 
     if (user) {
-        return <Redirect to={redirect} />;
+        return <Navigate to={parseRedirectParam(redirect)} replace />;
     }
 
     return (

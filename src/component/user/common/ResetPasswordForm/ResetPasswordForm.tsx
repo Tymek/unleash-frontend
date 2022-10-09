@@ -1,4 +1,4 @@
-import { Button } from '@material-ui/core';
+import { Button } from '@mui/material';
 import classnames from 'classnames';
 import React, {
     Dispatch,
@@ -8,10 +8,10 @@ import React, {
     useEffect,
     useState,
 } from 'react';
-import { useHistory } from 'react-router';
-import { useCommonStyles } from 'themes/commonStyles';
+import { useNavigate } from 'react-router';
+import { useThemeStyles } from 'themes/themeStyles';
 import { OK } from 'constants/statusCodes';
-import ConditionallyRender from 'component/common/ConditionallyRender';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
 import ResetPasswordError from '../ResetPasswordError/ResetPasswordError';
 import PasswordChecker from './PasswordChecker/PasswordChecker';
 import PasswordMatcher from './PasswordMatcher/PasswordMatcher';
@@ -25,15 +25,15 @@ interface IResetPasswordProps {
 }
 
 const ResetPasswordForm = ({ token, setLoading }: IResetPasswordProps) => {
-    const styles = useStyles();
-    const commonStyles = useCommonStyles();
+    const { classes: styles } = useStyles();
+    const { classes: themeStyles } = useThemeStyles();
     const [apiError, setApiError] = useState(false);
     const [password, setPassword] = useState('');
     const [showPasswordChecker, setShowPasswordChecker] = useState(false);
     const [confirmPassword, setConfirmPassword] = useState('');
     const [matchingPasswords, setMatchingPasswords] = useState(false);
     const [validOwaspPassword, setValidOwaspPassword] = useState(false);
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const submittable = matchingPasswords && validOwaspPassword;
 
@@ -74,7 +74,7 @@ const ResetPasswordForm = ({ token, setLoading }: IResetPasswordProps) => {
             const res = await makeResetPasswordReq();
             setLoading(false);
             if (res.status === OK) {
-                history.push('login?reset=true');
+                navigate('login?reset=true');
                 setApiError(false);
             } else {
                 setApiError(true);
@@ -104,7 +104,7 @@ const ResetPasswordForm = ({ token, setLoading }: IResetPasswordProps) => {
             <form
                 onSubmit={handleSubmit}
                 className={classnames(
-                    commonStyles.contentSpacingY,
+                    themeStyles.contentSpacingY,
                     styles.container
                 )}
             >
@@ -115,7 +115,7 @@ const ResetPasswordForm = ({ token, setLoading }: IResetPasswordProps) => {
                         setPassword(e.target.value)
                     }
                     onFocus={() => setShowPasswordChecker(true)}
-                    autoComplete="password"
+                    autoComplete="new-password"
                     data-loading
                 />
                 <PasswordField
@@ -124,7 +124,7 @@ const ResetPasswordForm = ({ token, setLoading }: IResetPasswordProps) => {
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         setConfirmPassword(e.target.value)
                     }
-                    autoComplete="confirm-password"
+                    autoComplete="new-password"
                     data-loading
                 />
                 <ConditionallyRender

@@ -1,25 +1,26 @@
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useEnvironmentForm from '../hooks/useEnvironmentForm';
 import EnvironmentForm from '../EnvironmentForm/EnvironmentForm';
 import FormTemplate from 'component/common/FormTemplate/FormTemplate';
-import { Alert } from '@material-ui/lab';
-import { Button } from '@material-ui/core';
+import { Alert } from '@mui/material';
+import { Button } from '@mui/material';
 import { CreateButton } from 'component/common/CreateButton/CreateButton';
 import useEnvironmentApi from 'hooks/api/actions/useEnvironmentApi/useEnvironmentApi';
 import useUiConfig from 'hooks/api/getters/useUiConfig/useUiConfig';
 import useToast from 'hooks/useToast';
 import { useEnvironments } from 'hooks/api/getters/useEnvironments/useEnvironments';
 import useProjectRolePermissions from 'hooks/api/getters/useProjectRolePermissions/useProjectRolePermissions';
-import ConditionallyRender from 'component/common/ConditionallyRender';
-import PageContent from 'component/common/PageContent/PageContent';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
+import { PageContent } from 'component/common/PageContent/PageContent';
 import { ADMIN } from 'component/providers/AccessProvider/permissions';
-import HeaderTitle from 'component/common/HeaderTitle/HeaderTitle';
+import { PageHeader } from 'component/common/PageHeader/PageHeader';
 import { formatUnknownError } from 'utils/formatUnknownError';
+import { GO_BACK } from 'constants/navigate';
 
 const CreateEnvironment = () => {
     const { setToastApiError, setToastData } = useToast();
     const { uiConfig } = useUiConfig();
-    const history = useHistory();
+    const navigate = useNavigate();
     const { environments } = useEnvironments();
     const canCreateMoreEnvs = environments.length < 7;
     const { createEnvironment, loading } = useEnvironmentApi();
@@ -49,7 +50,7 @@ const CreateEnvironment = () => {
                     type: 'success',
                     confetti: true,
                 });
-                history.push('/environments');
+                navigate('/environments');
             } catch (error: unknown) {
                 setToastApiError(formatUnknownError(error));
             }
@@ -66,7 +67,7 @@ const CreateEnvironment = () => {
     };
 
     const handleCancel = () => {
-        history.goBack();
+        navigate(GO_BACK);
     };
 
     return (
@@ -75,7 +76,7 @@ const CreateEnvironment = () => {
             show={
                 <FormTemplate
                     loading={loading}
-                    title="Create Environment"
+                    title="Create environment"
                     description="Environments allow you to manage your
                             product lifecycle from local development
                             through production. Your projects and
@@ -87,6 +88,7 @@ const CreateEnvironment = () => {
                             enabling the feature toggle in the
                             production environment."
                     documentationLink="https://docs.getunleash.io/user_guide/environments"
+                    documentationLinkLabel="Environments documentation"
                     formatApiCode={formatApiCode}
                 >
                     <EnvironmentForm
@@ -108,9 +110,7 @@ const CreateEnvironment = () => {
             elseShow={
                 <>
                     <PageContent
-                        headerContent={
-                            <HeaderTitle title="Create environment" />
-                        }
+                        header={<PageHeader title="Create environment" />}
                     >
                         <Alert severity="error">
                             <p>

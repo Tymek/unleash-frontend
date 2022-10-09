@@ -1,7 +1,17 @@
-import NoItems from 'component/common/NoItems/NoItems';
-import StringTruncator from 'component/common/StringTruncator/StringTruncator';
-import { useStyles } from './FeatureStrategyEmpty.styles';
+import { Link } from 'react-router-dom';
+import { Box } from '@mui/material';
+import { SectionSeparator } from 'component/feature/FeatureView/FeatureOverview/FeatureOverviewEnvironments/FeatureOverviewEnvironment/SectionSeparator/SectionSeparator';
+import useFeatureStrategyApi from 'hooks/api/actions/useFeatureStrategyApi/useFeatureStrategyApi';
+import useToast from 'hooks/useToast';
+import { useFeature } from 'hooks/api/getters/useFeature/useFeature';
 import { FeatureStrategyMenu } from '../FeatureStrategyMenu/FeatureStrategyMenu';
+import { PresetCard } from './PresetCard/PresetCard';
+import { useStyles } from './FeatureStrategyEmpty.styles';
+import { formatUnknownError } from 'utils/formatUnknownError';
+import { useFeatureImmutable } from 'hooks/api/getters/useFeature/useFeatureImmutable';
+import { getFeatureStrategyIcon } from 'utils/strategyNames';
+import { ConditionallyRender } from 'component/common/ConditionallyRender/ConditionallyRender';
+import { CopyButton } from './CopyButton/CopyButton';
 
 interface IFeatureStrategyEmptyProps {
     projectId: string;
@@ -14,38 +24,166 @@ export const FeatureStrategyEmpty = ({
     featureId,
     environmentId,
 }: IFeatureStrategyEmptyProps) => {
-    const styles = useStyles();
+    const { classes: styles } = useStyles();
+    const { addStrategyToFeature } = useFeatureStrategyApi();
+    const { setToastData, setToastApiError } = useToast();
+    const { refetchFeature } = useFeature(projectId, featureId);
+    const { refetchFeature: refetchFeatureImmutable } = useFeatureImmutable(
+        projectId,
+        featureId
+    );
+    const { feature } = useFeature(projectId, featureId);
+    const otherAvailableEnvironments = feature?.environments.filter(
+        environment =>
+            environment.name !== environmentId &&
+            environment.strategies &&
+            environment.strategies.length > 0
+    );
+
+    const onAfterAddStrategy = (multiple = false) => {
+        refetchFeature();
+        refetchFeatureImmutable();
+
+        setToastData({
+            title: multiple ? 'Strategies created' : 'Strategy created',
+            text: multiple
+                ? 'Successfully copied from another environment'
+                : 'Successfully created strategy',
+            type: 'success',
+        });
+    };
+
+    const onCopyStrategies = async (fromEnvironmentName: string) => {
+        const strategies =
+            otherAvailableEnvironments?.find(
+                environment => environment.name === fromEnvironmentName
+            )?.strategies || [];
+
+        try {
+            await Promise.all(
+                strategies.map(strategy => {
+                    const { id, ...strategyCopy } = {
+                        ...strategy,
+                        environment: environmentId,
+                    };
+
+                    return addStrategyToFeature(
+                        projectId,
+                        featureId,
+                        environmentId,
+                        strategyCopy
+                    );
+                })
+            );
+            onAfterAddStrategy(true);
+        } catch (error) {
+            setToastApiError(formatUnknownError(error));
+        }
+    };
+
+    const onAddSimpleStrategy = async () => {
+        try {
+            await addStrategyToFeature(projectId, featureId, environmentId, {
+                name: 'default',
+                parameters: {},
+                constraints: [],
+            });
+            onAfterAddStrategy();
+        } catch (error) {
+            setToastApiError(formatUnknownError(error));
+        }
+    };
+
+    const onAddGradualRolloutStrategy = async () => {
+        try {
+            await addStrategyToFeature(projectId, featureId, environmentId, {
+                name: 'flexibleRollout',
+                parameters: {
+                    rollout: '50',
+                    stickiness: 'default',
+                },
+                constraints: [],
+            });
+            onAfterAddStrategy();
+        } catch (error) {
+            setToastApiError(formatUnknownError(error));
+        }
+    };
 
     return (
-        <NoItems>
-            <p className={styles.noItemsParagraph}>
-                No strategies added in the{' '}
-                <StringTruncator
-                    text={environmentId}
-                    maxWidth={'130'}
-                    maxLength={15}
-                    className={styles.envName}
-                />{' '}
-                environment
-            </p>
-            <p className={styles.noItemsParagraph}>
+        <div className={styles.container}>
+            <div className={styles.title}>
+                You have not defined any strategies yet.
+            </div>
+            <p className={styles.description}>
                 Strategies added in this environment will only be executed if
-                the SDK is using an API key configured for this environment.
-                <a
-                    className={styles.link}
-                    href="https://docs.getunleash.io/user_guide/environments"
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                    Read more here
-                </a>
+                the SDK is using an{' '}
+                <Link to="/admin/api">API key configured</Link> for this
+                environment.
             </p>
-            <FeatureStrategyMenu
-                label="Add your first strategy"
-                projectId={projectId}
-                featureId={featureId}
-                environmentId={environmentId}
-            />
-        </NoItems>
+            <Box
+                sx={{
+                    w: '100%',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 2,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                <FeatureStrategyMenu
+                    label="Add your first strategy"
+                    projectId={projectId}
+                    featureId={featureId}
+                    environmentId={environmentId}
+                />
+                <ConditionallyRender
+                    condition={
+                        otherAvailableEnvironments &&
+                        otherAvailableEnvironments.length > 0
+                    }
+                    show={
+                        <CopyButton
+                            environmentId={environmentId}
+                            environments={otherAvailableEnvironments.map(
+                                environment => environment.name
+                            )}
+                            onClick={onCopyStrategies}
+                        />
+                    }
+                />
+            </Box>
+            <Box sx={{ width: '100%', mt: 3 }}>
+                <SectionSeparator>Or use a strategy template</SectionSeparator>
+            </Box>
+            <Box
+                sx={{
+                    display: 'grid',
+                    width: '100%',
+                    gap: 2,
+                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                }}
+            >
+                <PresetCard
+                    title="Standard strategy"
+                    Icon={getFeatureStrategyIcon('default')}
+                    onClick={onAddSimpleStrategy}
+                    projectId={projectId}
+                    environmentId={environmentId}
+                >
+                    The standard strategy is strictly on/off for your entire
+                    userbase.
+                </PresetCard>
+                <PresetCard
+                    title="Gradual rollout"
+                    Icon={getFeatureStrategyIcon('flexibleRollout')}
+                    onClick={onAddGradualRolloutStrategy}
+                    projectId={projectId}
+                    environmentId={environmentId}
+                >
+                    Roll out to a percentage of your userbase.
+                </PresetCard>
+            </Box>
+        </div>
     );
 };

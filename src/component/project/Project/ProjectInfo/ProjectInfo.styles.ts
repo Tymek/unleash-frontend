@@ -1,13 +1,13 @@
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from 'tss-react/mui';
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
     projectInfo: {
         width: '225px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         boxShadow: 'none',
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
             flexDirection: 'row',
             alignItems: 'stretch',
             width: '100%',
@@ -26,6 +26,7 @@ export const useStyles = makeStyles(theme => ({
         display: 'flex',
         width: '100%',
         textAlign: 'left',
+        wordBreak: 'break-all',
     },
     percentageContainer: {
         display: 'flex',
@@ -34,18 +35,18 @@ export const useStyles = makeStyles(theme => ({
     },
     projectIcon: {
         margin: '2rem 0',
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
             margin: '0 0 0.25rem 0',
             width: '53px',
         },
     },
     subtitle: {
-        marginBottom: '1.25rem',
+        marginBottom: '1rem',
     },
     emphazisedText: {
         fontSize: '1.5rem',
         marginBottom: '1rem',
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
             fontSize: '1rem',
             marginBottom: '2rem',
         },
@@ -54,11 +55,11 @@ export const useStyles = makeStyles(theme => ({
         margin: '0',
         textAlign: 'center',
         marginBottom: '1rem',
-        backgroundColor: '#fff',
-        borderRadius: '10px',
+        backgroundColor: theme.palette.background.paper,
+        borderRadius: theme.shape.borderRadiusLarge,
         width: '100%',
         padding: '1.5rem 1rem 1.5rem 1rem',
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
             margin: '0 0.25rem',
             display: 'flex',
             flexDirection: 'column',
@@ -67,10 +68,10 @@ export const useStyles = makeStyles(theme => ({
             fontSize: '0.8rem',
             position: 'relative',
             padding: '0.8rem',
-            ['&:first-child']: {
+            '&:first-of-type': {
                 marginLeft: '0',
             },
-            ['&:last-child']: {
+            '&:last-of-type': {
                 marginRight: '0',
             },
         },
@@ -85,7 +86,7 @@ export const useStyles = makeStyles(theme => ({
     infoLink: {
         textDecoration: 'none',
         color: '#635dc5',
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
             position: 'absolute',
             bottom: '5px',
         },
@@ -94,13 +95,13 @@ export const useStyles = makeStyles(theme => ({
         boxShadow: 'none',
         textAlign: 'left',
     },
-    accordionBody: { padding: '0' },
+    accordionBody: { padding: '0', wordBreak: 'break-all' },
     accordionActions: {
         padding: '0',
         justifyContent: 'flex-start',
     },
     linkText: {
-        [theme.breakpoints.down('sm')]: {
+        [theme.breakpoints.down('md')]: {
             display: 'none',
         },
     },
